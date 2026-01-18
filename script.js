@@ -6,6 +6,7 @@ const DEFAULT_MODES = {
 };
 
 let modes = { ...DEFAULT_MODES };
+let history = []; // [{ id, task, date, duration }]
 let currentMode = 'focus';
 let timeLeft = modes[currentMode] * 60;
 let timerId = null;
@@ -131,6 +132,51 @@ function switchMode(mode) {
     resetTimer();
 }
 
+// --- History Logic ---
+
+function addToHistory(taskName) {
+    // Only add history for Focus sessions
+    if (currentMode !== 'focus') return;
+
+    const entry = {
+        id: Date.now(),
+        task: taskName || 'Focus Session',
+        date: new Date().toLocaleString(), // Format nicely?
+        duration: modes.focus
+    };
+
+    history.unshift(entry); // Add to top
+    localStorage.setItem('pomodoroHistory', JSON.stringify(history));
+    renderHistory();
+}
+
+function renderHistory() {
+    historyList.innerHTML = '';
+
+    if (history.length === 0) {
+        historyList.innerHTML = '<li style="text-align:center; opacity:0.5; margin-top:2rem;">No history yet</li>';
+        return;
+    }
+
+    history.forEach(item => {
+        const li = document.createElement('li');
+        li.className = 'history-item';
+
+        // Simple date formatting
+        const dateObj = new Date(item.id);
+        const dateStr = dateObj.toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+        li.innerHTML = `
+            <div class="history-info">
+                <span class="history-task">${item.task}</span>
+                <span class="history-time">${dateStr}</span>
+            </div>
+            <span class="history-duration">${item.duration}m</span>
+        `;
+        historyList.appendChild(li);
+    });
+}
+
 // --- Timer Logic ---
 
 async function requestNotificationPermission() {
@@ -167,6 +213,11 @@ function startTimer() {
                 startBtn.textContent = 'Start';
                 alarmSound.play().catch(e => console.log('Audio error', e));
                 showNotification();
+
+                // Add to history if Focus
+                if (currentMode === 'focus') {
+                    addToHistory(currentTaskText.textContent);
+                }
             }
         }, 1000);
     }
@@ -215,10 +266,14 @@ completeTaskBtn.addEventListener('click', () => {
     }
 
     // 2. Clear task (or keep it as "Completed" list? For now just clear inputs)
+    const completedTask = currentTaskText.textContent;
     currentTaskText.textContent = '';
     taskInput.value = '';
     taskDisplay.classList.add('hidden');
     taskInput.classList.remove('hidden');
+
+    // 2.5 Add to History
+    addToHistory(completedTask);
 
     // 3. Switch to Short Break
     switchMode('short');
@@ -250,6 +305,30 @@ settingsModal.addEventListener('click', (e) => {
         inputs.focus.value = modes.focus;
         inputs.short.value = modes.short;
         inputs.long.value = modes.long;
+    }
+});
+
+// History Event Listeners
+historyBtn.addEventListener('click', () => {
+    renderHistory();
+    historyModal.classList.add('open');
+});
+
+closeHistoryBtn.addEventListener('click', () => {
+    historyModal.classList.remove('open');
+});
+
+historyModal.addEventListener('click', (e) => {
+    if (e.target === historyModal) {
+        historyModal.classList.remove('open');
+    }
+});
+
+clearHistoryBtn.addEventListener('click', () => {
+    if (confirm('Clear all history?')) {
+        history = [];
+        localStorage.removeItem('pomodoroHistory');
+        renderHistory();
     }
 });
 

@@ -57,6 +57,8 @@
                         title="Clear Task">✕</button>
                 </div>
             </div>
+
+            <button id="history-btn" class="btn-text">View History</button>
         </div>
     </div>
 
@@ -77,6 +79,20 @@
                 <input type="number" id="long-time-input" value="15" min="1" max="60">
             </div>
             <button id="close-modal-btn" class="btn primary">Save & Close</button>
+        </div>
+    </div>
+
+    <!-- History Modal -->
+    <div id="history-modal" class="modal">
+        <div class="modal-content glass-card history-content">
+            <div class="modal-header">
+                <h2>History</h2>
+                <button id="close-history-btn" class="icon-btn-small">✕</button>
+            </div>
+            <ul id="history-list" class="history-list">
+                <!-- Items will be injected here -->
+            </ul>
+            <button id="clear-history-btn" class="btn secondary small">Clear History</button>
         </div>
     </div>
 
