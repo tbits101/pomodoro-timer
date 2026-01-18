@@ -19,6 +19,18 @@ const alarmSound = document.getElementById('alarm-sound');
 const modeBtns = document.querySelectorAll('.mode-btn');
 const titleDisplay = document.querySelector('.title');
 
+// Progress Ring Elements
+const circle = document.querySelector('.progress-ring__circle');
+const radius = circle.r.baseVal.value;
+const circumference = radius * 2 * Math.PI;
+
+// Task Elements
+const taskInput = document.getElementById('task-input');
+const taskDisplay = document.getElementById('task-display');
+const currentTaskText = document.getElementById('current-task-text');
+const clearTaskBtn = document.getElementById('clear-task-btn');
+const completeTaskBtn = document.getElementById('complete-task-btn');
+
 // Settings Elements
 const settingsBtn = document.getElementById('settings-btn');
 const settingsModal = document.getElementById('settings-modal');
@@ -32,6 +44,10 @@ const inputs = {
 // --- Initialization ---
 
 function init() {
+    // Setup Ring
+    circle.style.strokeDasharray = `${circumference} ${circumference}`;
+    circle.style.strokeDashoffset = circumference;
+
     // Load config from localStorage
     const savedModes = localStorage.getItem('pomodoroModes');
     if (savedModes) {
@@ -55,11 +71,31 @@ function formatTime(seconds) {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 }
 
+function setProgress(percent) {
+    // 0% = empty, 100% = full
+    // But we are counting DOWN. 
+    // Start: Full circle (offset 0). End: Empty (offset circumference)
+    // Or other way? Let's make it deplete.
+    // Full = 0 offset. Empty = circumference.
+    const offset = circumference - (percent / 100) * circumference;
+    circle.style.strokeDashoffset = offset;
+}
+
 function updateDisplay() {
     timeDisplay.textContent = formatTime(timeLeft);
     const modeName = currentMode === 'focus' ? 'Focus' :
         currentMode === 'short' ? 'Short Break' : 'Long Break';
-    document.title = `${formatTime(timeLeft)} - ${modeName}`;
+    const taskPart = currentTaskText.textContent ? `[${currentTaskText.textContent}] ` : '';
+    document.title = `${formatTime(timeLeft)} - ${taskPart}${modeName}`;
+
+    // Update Ring
+    const totalTime = modes[currentMode] * 60;
+    const percent = (timeLeft / totalTime) * 100;
+    // We want the ring to disappear as time goes. 
+    // If percent is 100 (full), offset should be 0.
+    // If percent is 0 (empty), offset should be circumference.
+    const offset = circumference - (percent / 100) * circumference;
+    circle.style.strokeDashoffset = offset;
 }
 
 function saveSettings() {
@@ -74,13 +110,7 @@ function saveSettings() {
 
     localStorage.setItem('pomodoroModes', JSON.stringify(modes));
 
-    // Close modal
     settingsModal.classList.remove('open');
-
-    // Update current timer only if not running to avoid disruption
-    // Or if running but we want to adjust endpoint (complex). 
-    // Simplest: If logic requires update, do it. 
-    // Here: Update timeLeft if we are in that mode and paused, or just force reset.
     if (!isRunning) {
         resetTimer();
     }
@@ -89,16 +119,12 @@ function saveSettings() {
 function switchMode(mode) {
     currentMode = mode;
 
-    // Update UI Active State
     modeBtns.forEach(btn => {
         btn.classList.remove('active');
         if (btn.dataset.mode === mode) btn.classList.add('active');
     });
 
-    // Body Theme
     document.body.className = mode === 'focus' ? '' : `${mode}-break`;
-
-    // Title
     titleDisplay.textContent = mode === 'focus' ? 'Focus' :
         mode === 'short' ? 'Short Break' : 'Long Break';
 
@@ -141,7 +167,6 @@ function startTimer() {
                 startBtn.textContent = 'Start';
                 alarmSound.play().catch(e => console.log('Audio error', e));
                 showNotification();
-                // Optionally auto-switch modes here? For now, just stop.
             }
         }, 1000);
     }
@@ -154,10 +179,53 @@ function pauseTimer() {
 }
 
 function resetTimer() {
-    pauseTimer(); // Stops interval
+    pauseTimer();
     timeLeft = modes[currentMode] * 60;
+    // Reset ring to full
+    circle.style.strokeDashoffset = 0;
     updateDisplay();
 }
+
+// --- Task Logic ---
+taskInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter' && taskInput.value.trim() !== '') {
+        currentTaskText.textContent = taskInput.value;
+        taskInput.classList.add('hidden');
+        taskDisplay.classList.remove('hidden');
+        updateDisplay(); // Update title
+    }
+});
+
+clearTaskBtn.addEventListener('click', () => {
+    currentTaskText.textContent = '';
+    taskInput.value = '';
+    taskDisplay.classList.add('hidden');
+    taskInput.classList.remove('hidden');
+    taskInput.focus();
+    updateDisplay(); // Update title
+});
+
+completeTaskBtn.addEventListener('click', () => {
+    // 1. Notify user
+    if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification('Task Completed!', {
+            body: `You finished "${currentTaskText.textContent}". Enjoy your break!`,
+            icon: 'https://cdn-icons-png.flaticon.com/512/2928/2928750.png'
+        });
+    }
+
+    // 2. Clear task (or keep it as "Completed" list? For now just clear inputs)
+    currentTaskText.textContent = '';
+    taskInput.value = '';
+    taskDisplay.classList.add('hidden');
+    taskInput.classList.remove('hidden');
+
+    // 3. Switch to Short Break
+    switchMode('short');
+
+    // 4. Reset Timer (already done by switchMode)
+    // Optional: Auto start break? Let's leave it manual start for control.
+});
 
 // --- Event Listeners ---
 
@@ -176,14 +244,9 @@ settingsBtn.addEventListener('click', () => {
 
 closeModalBtn.addEventListener('click', saveSettings);
 
-// Close modal if clicking outside content
 settingsModal.addEventListener('click', (e) => {
     if (e.target === settingsModal) {
-        // Can optionally save or just cancel. Let's just close (cancel) or save?
-        // User expects "Save" usually only on button. Let's just close without saving?
-        // Actually, safer to just close.
         settingsModal.classList.remove('open');
-        // Reset inputs to match actual modes
         inputs.focus.value = modes.focus;
         inputs.short.value = modes.short;
         inputs.long.value = modes.long;

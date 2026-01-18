@@ -307,3 +307,115 @@ body.long-break .primary {
 body.long-break .mode-btn.active {
     color: #ec008c;
 }
+
+/* Progress Ring */
+.timer-container {
+    position: relative;
+    width: 300px;
+    height: 300px;
+    margin: 0 auto 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.timer-display {
+    position: absolute;
+    margin-bottom: 0;
+    /* Override generic style */
+    font-size: 5rem;
+    z-index: 2;
+}
+
+.progress-ring {
+    transform: rotate(-90deg);
+}
+
+.progress-ring__circle {
+    transition: stroke-dashoffset 0.35s;
+    transform-origin: 50% 50%;
+    stroke-linecap: round;
+}
+
+/* Task Section */
+.task-section {
+    margin-top: 2rem;
+    position: relative;
+    min-height: 60px;
+}
+
+#task-input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+    padding: 0.8rem;
+    font-size: 1.2rem;
+    color: white;
+    text-align: center;
+    font-family: inherit;
+    transition: border-color 0.3s ease;
+}
+
+#task-input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+    font-weight: 300;
+}
+
+#task-input:focus {
+    outline: none;
+    border-color: white;
+}
+
+#task-display {
+    text-align: center;
+    animation: fadeIn 0.3s ease;
+}
+
+.task-label {
+    display: block;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    opacity: 0.7;
+    margin-bottom: 0.3rem;
+}
+
+#current-task-text {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    display: inline-block;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.icon-btn-small {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-left: 0.5rem;
+    opacity: 0.6;
+    padding: 0.2rem;
+    vertical-align: middle;
+}
+
+.icon-btn-small:hover {
+    opacity: 1;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

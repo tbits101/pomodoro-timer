@@ -22,7 +22,15 @@
                 <button class="mode-btn" data-mode="long">Long Break</button>
             </div>
 
-            <div class="timer-display" id="time-display">25:00</div>
+            <div class="timer-container">
+                <svg class="progress-ring" width="300" height="300">
+                    <circle class="progress-ring__circle-bg" stroke="rgba(255,255,255,0.1)" stroke-width="8"
+                        fill="transparent" r="140" cx="150" cy="150" />
+                    <circle class="progress-ring__circle" stroke="white" stroke-width="8" fill="transparent" r="140"
+                        cx="150" cy="150" />
+                </svg>
+                <div class="timer-display" id="time-display">25:00</div>
+            </div>
 
             <div class="controls">
                 <button id="start-btn" class="btn primary">Start</button>
@@ -31,11 +39,23 @@
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path
-                            d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z">
+                            d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l-.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z">
                         </path>
                         <circle cx="12" cy="12" r="3"></circle>
                     </svg>
                 </button>
+            </div>
+
+            <div class="task-section">
+                <input type="text" id="task-input" placeholder="What are you working on?" autocomplete="off">
+                <div id="task-display" class="hidden">
+                    <span class="task-label">Focusing on:</span>
+                    <h3 id="current-task-text"></h3>
+                    <button id="complete-task-btn" class="icon-btn-small" aria-label="Complete Task"
+                        title="Complete & Take Break">✓</button>
+                    <button id="clear-task-btn" class="icon-btn-small" aria-label="Clear Task"
+                        title="Clear Task">✕</button>
+                </div>
             </div>
         </div>
     </div>
