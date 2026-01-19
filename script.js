@@ -192,10 +192,29 @@ function renderHistory() {
                 <span class="history-task">${item.task}</span>
                 <span class="history-time">${dateStr}</span>
             </div>
-            <span class="history-duration">${item.duration}m</span>
+            <div class="history-actions">
+                <span class="history-duration">${item.duration}m</span>
+                <button class="delete-item-btn" data-id="${item.id}" aria-label="Delete item">✕</button>
+            </div>
         `;
         historyList.appendChild(li);
     });
+}
+
+// Event Delegation for Delete
+historyList.addEventListener('click', (e) => {
+    if (e.target.classList.contains('delete-item-btn')) {
+        const id = parseInt(e.target.dataset.id);
+        if (id) {
+            deleteHistoryItem(id);
+        }
+    }
+});
+
+function deleteHistoryItem(id) {
+    history = history.filter(item => item.id !== id);
+    localStorage.setItem('pomodoroHistory', JSON.stringify(history));
+    renderHistory();
 }
 
 // --- Timer Logic ---

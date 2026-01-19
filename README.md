@@ -85,6 +85,7 @@ We have a comprehensive plan to evolve this tool into a productivity powerhouse.
     - [ ] Auto-start breaks
 - **9. History & Daily Stats**
     - [x] History log of sessions
+    - [x] **Delete Items**: Remove specific sessions from history.
     - [ ] Total focused time calculation
     - [ ] Daily/Weekly summaries
 - **10. Pause & Resume Tracking**
