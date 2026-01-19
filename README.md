@@ -70,6 +70,7 @@ We have a comprehensive plan to evolve this tool into a productivity powerhouse.
     - [x] Timer countdown
     - [x] Current mode display
     - [x] Clear call-to-action buttons
+    - [x] **Direct Timer Edit**: Click the timer text to type a custom time.
 - **6. Settings (Basic)**
     - [x] Adjust work and break durations
     - [ ] Enable/disable sounds toggle

@@ -200,6 +200,8 @@ function renderHistory() {
 
 // --- Timer Logic ---
 
+// --- Timer Logic ---
+
 async function requestNotificationPermission() {
     if ('Notification' in window && Notification.permission === 'default') {
         await Notification.requestPermission();
@@ -257,6 +259,64 @@ function resetTimer() {
     circle.style.strokeDashoffset = 0;
     updateDisplay();
 }
+
+// --- Edit Timer Logic ---
+timeDisplay.addEventListener('click', () => {
+    if (document.querySelector('.timer-input')) return; // Already editing
+
+    pauseTimer();
+
+    const currentText = timeDisplay.textContent;
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.value = currentText;
+    input.className = 'timer-input';
+    input.maxLength = 5; // MM:SS
+
+    // Replace text with input
+    timeDisplay.textContent = '';
+    timeDisplay.appendChild(input);
+    input.focus();
+    input.select();
+
+    // Save on Enter or Blur
+    const saveTime = () => {
+        const val = input.value.trim();
+        // Regex for MM:SS or Just MM or M:SS
+        // Supports: 25, 25:00, 5:00
+        const match = val.match(/^(\d{1,2})(:(\d{1,2}))?$/);
+
+        if (match) {
+            let mins = parseInt(match[1]);
+            let secs = match[3] ? parseInt(match[3]) : 0;
+
+            // Limit logical bounds
+            if (mins > 99) mins = 99;
+            if (secs > 59) secs = 59;
+
+            if (mins === 0 && secs === 0) {
+                // Don't allow 00:00, reset to default? or just ignore
+            } else {
+                timeLeft = (mins * 60) + secs;
+            }
+        }
+
+        // Restore display
+        updateDisplay();
+    };
+
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            saveTime();
+            input.blur(); // Triggers blur event
+        }
+    });
+
+    input.addEventListener('blur', () => {
+        saveTime(); // Determine if we want to save on blur or just cancel? 
+        // Let's save on blur for better UX
+    });
+});
 
 // --- Task Logic ---
 taskInput.addEventListener('keypress', (e) => {
