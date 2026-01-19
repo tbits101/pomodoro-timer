@@ -98,6 +98,101 @@ body {
     justify-content: center;
 }
 
+/* Modal Specifics */
+.history-content {
+    max-width: 600px;
+    /* Wider modal for history */
+    width: 95%;
+}
+
+.history-list {
+    list-style: none;
+    max-height: 350px;
+    overflow-y: auto;
+    margin: 1.5rem 0;
+    padding-right: 0.5rem;
+    /* Space for scrollbar */
+}
+
+/* Custom Scrollbar */
+.history-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.history-list::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+}
+
+.history-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+}
+
+.history-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.4);
+}
+
+.history-item {
+    background: rgba(255, 255, 255, 0.08);
+    /* Distinct card background */
+    margin-bottom: 0.8rem;
+    padding: 1rem;
+    border-radius: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.history-item:hover {
+    transform: translateX(2px);
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.history-info {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    gap: 0.2rem;
+}
+
+.history-task {
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: white;
+}
+
+.history-time {
+    font-size: 0.8rem;
+    opacity: 0.6;
+    letter-spacing: 0.05em;
+}
+
+.history-duration {
+    font-family: monospace;
+    font-size: 1rem;
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.15);
+    padding: 0.3rem 0.6rem;
+    border-radius: 8px;
+    color: white;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.modal-header h2 {
+    margin-bottom: 0;
+    /* Override generic margin */
+    text-align: left;
+}
+
 .btn {
     padding: 1rem 2.5rem;
     border: none;
@@ -418,4 +513,27 @@ body.long-break .mode-btn.active {
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+/* Text Button (History) */
+.btn-text {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 1.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    transition: all 0.3s ease;
+    font-family: inherit;
+}
+
+.btn-text:hover {
+    color: white;
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-1px);
 }

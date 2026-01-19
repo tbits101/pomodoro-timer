@@ -32,6 +32,13 @@ const currentTaskText = document.getElementById('current-task-text');
 const clearTaskBtn = document.getElementById('clear-task-btn');
 const completeTaskBtn = document.getElementById('complete-task-btn');
 
+// History Elements
+const historyBtn = document.getElementById('history-btn');
+const historyModal = document.getElementById('history-modal');
+const historyList = document.getElementById('history-list');
+const closeHistoryBtn = document.getElementById('close-history-btn');
+const clearHistoryBtn = document.getElementById('clear-history-btn');
+
 // Settings Elements
 const settingsBtn = document.getElementById('settings-btn');
 const settingsModal = document.getElementById('settings-modal');
@@ -45,7 +52,15 @@ const inputs = {
 // --- Initialization ---
 
 function init() {
+    console.log("Pomodoro Timer v1.2.0 - Loaded");
     // Setup Ring
+
+    // Recalculate circumference based on actual or fallback radius
+    // We update the global circumference variable if needed, but it's const.
+    // So we should probably move circumference var or just trust the math.
+    // Since 'circumference' is const defined at top, we can't reassign it. 
+    // Let's rely on the top-level calculation but ensure strokeDasharray is set.
+
     circle.style.strokeDasharray = `${circumference} ${circumference}`;
     circle.style.strokeDashoffset = circumference;
 
@@ -53,6 +68,12 @@ function init() {
     const savedModes = localStorage.getItem('pomodoroModes');
     if (savedModes) {
         modes = JSON.parse(savedModes);
+    }
+
+    // Load history from localStorage
+    const savedHistory = localStorage.getItem('pomodoroHistory');
+    if (savedHistory) {
+        history = JSON.parse(savedHistory);
     }
 
     // Set initial custom values in inputs
@@ -135,12 +156,12 @@ function switchMode(mode) {
 // --- History Logic ---
 
 function addToHistory(taskName) {
-    // Only add history for Focus sessions
-    if (currentMode !== 'focus') return;
+    // Check if there is actually a task name to save
+    if (!taskName) return;
 
     const entry = {
         id: Date.now(),
-        task: taskName || 'Focus Session',
+        task: taskName,
         date: new Date().toLocaleString(), // Format nicely?
         duration: modes.focus
     };

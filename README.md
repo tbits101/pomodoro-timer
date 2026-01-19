@@ -22,9 +22,26 @@ A beautiful, glassmorphism-styled Pomodoro timer built with vanilla HTML, CSS, a
    python3 -m http.server 8080
    # Open http://localhost:8080 in your browser
    ```
+   
+   **Restoration/Restarting**:
+   If you need to restart the server (e.g., after closing the terminal), simply run the command above again. To stop a running server, press `Ctrl+C` in the terminal.
 
 2. **Direct Open**:
    You can simply open `index.html` in your browser, though notifications might be blocked.
+
+## FAQ & Troubleshooting
+
+**How do I make sure I have the latest version?**
+I've added a version log to the console. 
+1. Open Developer Tools (F12 or Right Click -> Inspect).
+2. Go to the "Console" tab.
+3. Look for the message: `Pomodoro Timer v1.2.0 - Loaded`.
+
+**How do I clear the cache for localhost?**
+Browsers sometimes hold onto old files. To force a refresh:
+- **Windows/Linux**: Press `Ctrl + Shift + R` or `Ctrl + F5`.
+- **Mac**: Press `Cmd + Shift + R`.
+- **Chrome DevTools**: With DevTools open, right-click the Refresh button and select "Empty Cache and Hard Reload".
 
 ## Roadmap (Future Improvements)
 
@@ -38,7 +55,7 @@ We plan to add the following features to make this a complete productivity tool:
     - Allow users to customize timer durations.
     - Persist settings to `localStorage`.
 
-- [ ] **Visual Progress Indicator**:
+- [x] **Visual Progress Indicator**:
     - Add a circular progress ring (SVG) around the timer or a progress bar.
     - Update title with dynamic progress (e.g., "12:30 - Focus").
 
