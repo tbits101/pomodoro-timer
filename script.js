@@ -193,7 +193,11 @@ function formatDuration(totalMins) {
 function calculateHistoryStats() {
     const now = new Date();
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-    const weekStart = todayStart - (7 * 24 * 60 * 60 * 1000);
+
+    // Get the start of the current week (Monday)
+    const dayOfWeek = now.getDay(); // 0 (Sun) to 6 (Sat)
+    const diffToMonday = (dayOfWeek === 0 ? 6 : dayOfWeek - 1); // Monday is day 1
+    const weekStart = todayStart - (diffToMonday * 24 * 60 * 60 * 1000);
 
     let totalMins = 0;
     let todayMins = 0;
@@ -276,7 +280,18 @@ function updateHistoryItem(id, type, value) {
             history[itemIndex].duration = duration;
         }
     } else if (type === 'date') {
-        const newDate = new Date(value);
+        let newDate = new Date(value);
+
+        // Fallback for DD.MM.YYYY format common in many regions
+        if (isNaN(newDate.getTime())) {
+            const parts = value.match(/(\d{1,2})[\.](\d{1,2})[\.](\d{4})/);
+            if (parts) {
+                // Construct YYYY-MM-DD (Month is 0-indexed in Date constructor if we use numbers, 
+                // but strings are 1-indexed. Let's use the string format YYYY-MM-DD)
+                newDate = new Date(`${parts[3]}-${parts[2].padStart(2, '0')}-${parts[1].padStart(2, '0')}`);
+            }
+        }
+
         if (!isNaN(newDate.getTime())) {
             history[itemIndex].id = newDate.getTime();
             // Re-sort history by ID (timestamp) descending
@@ -294,7 +309,11 @@ historyList.addEventListener('focusout', (e) => {
     if (e.target.hasAttribute('contenteditable')) {
         const id = parseInt(e.target.dataset.id);
         const type = e.target.dataset.type;
-        const newValue = e.target.innerText.trim().replace(/m$/, ''); // Remove trailing 'm' if present
+        let newValue = e.target.innerText.trim();
+
+        if (type === 'duration') {
+            newValue = newValue.replace(/m$/, ''); // Only strip 'm' for duration
+        }
 
         if (newValue || type === 'task') {
             updateHistoryItem(id, type, newValue);
