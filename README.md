@@ -12,6 +12,7 @@ A beautiful, glassmorphism-styled Pomodoro timer built with vanilla HTML, CSS, a
 - **Glassmorphism Design**: Modern UI with animated gradient backgrounds.
 - **Theming**: Color schemes change based on the active mode.
 - **Audio & Visual Alerts**: Plays a sound and sends a browser notification when the timer ends.
+- **PWA Support**: Installable on Android/iOS/Desktop with offline support.
 - **Responsive**: Works on desktop and mobile.
 
 ## How to Run
