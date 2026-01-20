@@ -816,3 +816,27 @@ clearHistoryBtn.addEventListener('click', () => {
 
 // Start
 init();
+
+// --- PWA Update Logic ---
+window.addEventListener('pwaUpdateAvailable', (event) => {
+    const registration = event.detail;
+    if (!registration || !registration.waiting) return;
+
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.id = 'pwa-update-toast';
+    notification.className = 'glass-toast';
+    notification.innerHTML = `
+        <div class="toast-content">
+            <p>A new version is available!</p>
+            <button id="pwa-update-btn" class="btn small">Update Now</button>
+        </div>
+    `;
+
+    document.body.appendChild(notification);
+
+    document.getElementById('pwa-update-btn').addEventListener('click', () => {
+        registration.waiting.postMessage('SKIP_WAITING');
+        notification.remove();
+    });
+});

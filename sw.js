@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pomodoro-v1.6.4';
+const CACHE_NAME = 'pomodoro-v1.7.1';
 const ASSETS = [
     './',
     './index.html',
@@ -39,4 +39,11 @@ self.addEventListener('fetch', (event) => {
             return cachedResponse || fetch(event.request);
         })
     );
+});
+
+// Communication with frontend
+self.addEventListener('message', (event) => {
+    if (event.data === 'SKIP_WAITING') {
+        self.skipWaiting();
+    }
 });

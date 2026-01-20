@@ -151,8 +151,28 @@
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js')
-                    .then(reg => console.log('Service Worker registered', reg))
+                    .then(reg => {
+                        console.log('Service Worker registered');
+                        
+                        reg.addEventListener('updatefound', () => {
+                            const newWorker = reg.installing;
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    // New version available, trigger UI notification
+                                    window.dispatchEvent(new CustomEvent('pwaUpdateAvailable', { detail: reg }));
+                                }
+                            });
+                        });
+                    })
                     .catch(err => console.log('Service Worker registration failed', err));
+            });
+
+            // Reload when the new service worker takes over
+            let refreshing = false;
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (refreshing) return;
+                refreshing = true;
+                window.location.reload();
             });
         }
     </script>

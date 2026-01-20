@@ -872,3 +872,47 @@ input:checked+.slider:before {
     /* Use accent color for promotion */
     transform: translateY(-2px);
 }
+/* PWA Update Toast */
+.glass-toast {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 16px;
+    padding: 1rem 1.5rem;
+    z-index: 2000;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    animation: slideUp 0.4s ease-out;
+}
+
+.toast-content {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.toast-content p {
+    margin: 0;
+    color: white;
+    font-weight: 500;
+}
+
+.btn.small {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translate(-50%, 100%);
+        opacity: 0;
+    }
+    to {
+        transform: translate(-50%, 0);
+        opacity: 1;
+    }
+}
