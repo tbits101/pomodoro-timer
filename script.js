@@ -236,7 +236,7 @@ function renderHistory() {
         li.innerHTML = `
             <div class="history-info">
                 <span class="history-task" contenteditable="true" data-id="${item.id}" data-type="task">${item.task}</span>
-                <span class="history-time">${dateStr}</span>
+                <span class="history-time" contenteditable="true" data-id="${item.id}" data-type="date">${dateStr}</span>
             </div>
             <div class="history-actions">
                 <span class="history-duration" contenteditable="true" data-id="${item.id}" data-type="duration">${item.duration}m</span>
@@ -275,14 +275,18 @@ function updateHistoryItem(id, type, value) {
         if (!isNaN(duration) && duration > 0) {
             history[itemIndex].duration = duration;
         }
+    } else if (type === 'date') {
+        const newDate = new Date(value);
+        if (!isNaN(newDate.getTime())) {
+            history[itemIndex].id = newDate.getTime();
+            // Re-sort history by ID (timestamp) descending
+            history.sort((a, b) => b.id - a.id);
+        }
     }
 
     localStorage.setItem('pomodoroHistory', JSON.stringify(history));
-    // Don't re-render everything to maintain focus, just update UI if needed
-    // But for duration we might want to re-format it to "Xm"
-    if (type === 'duration') {
-        renderHistory();
-    }
+    // Re-render to update UI (formatting and order)
+    renderHistory();
 }
 
 // History Inline Editing Delegation
