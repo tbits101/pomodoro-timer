@@ -22,16 +22,24 @@ A beautiful, glassmorphism-styled Pomodoro timer built with vanilla HTML, CSS, a
    python3 -m http.server 8080
    # Open http://localhost:8080 in your browser
    ```
-   
-   **Restoration/Restarting**:
+
+2. **Using [Just](https://github.com/casey/just) (Recommended)**:
+   If you have `just` installed, you can use these shortcuts:
+   - `just serve`: Start the local server.
+   - `just status`: Check git status.
+   - `just commit "Your message"`: Stage and commit changes.
+   - `just push`: Push changes to the main branch.
+   - `just deploy`: Deploy to GitHub Pages (merges main to gh-pages).
+   - `just`: List all available commands.
+    
+    **Restoration/Restarting**:
+
    If you need to restart the server (e.g., after closing the terminal), simply run the command above again. To stop a running server, press `Ctrl+C` in the terminal.
 
 ### 🌐 [How to Publish/Deploy for Free](DEPLOYMENT.md)
-Want to show your timer to the world? Check out our **[Deployment Guide](DEPLOYMENT.md)** for easy instructions on how to host this on GitHub Pages, Netlify, or Vercel for free.
+Check out our **[Deployment Guide](DEPLOYMENT.md)** for easy instructions on how to host this on GitHub Pages, Netlify, or Vercel for free.
 
-2. **Direct Open**:
-
-2. **Direct Open**:
+3. **Direct Open**:
    You can simply open `index.html` in your browser, though notifications might be blocked.
 
 ## FAQ & Troubleshooting
