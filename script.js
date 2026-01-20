@@ -38,6 +38,9 @@ const historyModal = document.getElementById('history-modal');
 const historyList = document.getElementById('history-list');
 const closeHistoryBtn = document.getElementById('close-history-btn');
 const clearHistoryBtn = document.getElementById('clear-history-btn');
+const statsToday = document.getElementById('stats-today');
+const statsWeek = document.getElementById('stats-week');
+const statsTotal = document.getElementById('stats-total');
 
 // Settings Elements
 const settingsBtn = document.getElementById('settings-btn');
@@ -180,7 +183,41 @@ function addToHistory(taskName) {
     renderHistory();
 }
 
+function formatDuration(totalMins) {
+    if (totalMins < 60) return `${totalMins}m`;
+    const hours = Math.floor(totalMins / 60);
+    const mins = totalMins % 60;
+    return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
+}
+
+function calculateHistoryStats() {
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+    const weekStart = todayStart - (7 * 24 * 60 * 60 * 1000);
+
+    let totalMins = 0;
+    let todayMins = 0;
+    let weekMins = 0;
+
+    history.forEach(item => {
+        const duration = parseInt(item.duration) || 0;
+        totalMins += duration;
+
+        if (item.id >= todayStart) {
+            todayMins += duration;
+        }
+        if (item.id >= weekStart) {
+            weekMins += duration;
+        }
+    });
+
+    statsToday.textContent = formatDuration(todayMins);
+    statsWeek.textContent = formatDuration(weekMins);
+    statsTotal.textContent = formatDuration(totalMins);
+}
+
 function renderHistory() {
+    calculateHistoryStats();
     historyList.innerHTML = '';
 
     if (history.length === 0) {

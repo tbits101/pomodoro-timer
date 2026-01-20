@@ -100,8 +100,8 @@ We have a comprehensive plan to evolve this tool into a productivity powerhouse.
     - [x] History log of sessions
     - [x] **Delete Items**: Remove specific sessions from history.
     - [x] **Inline Editing**: Modify entry titles and durations directly in the log.
-    - [ ] Total focused time calculation
-    - [ ] Daily/Weekly summaries
+    - [x] **Total focused time calculation** (Daily & Weekly summaries)
+    - [ ] Daily/Weekly goal tracking
 - **10. Pause & Resume Tracking**
     - [ ] Track interruptions and paused time
 - **11. Cross-Platform Sync**
