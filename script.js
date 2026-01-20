@@ -222,15 +222,16 @@ function calculateHistoryStats() {
 
     history.forEach(item => {
         const id = Number(item.id);
-        if (isNaN(id)) return;
+        if (isNaN(id) || id === 0) return;
 
         const duration = parseInt(item.duration) || 0;
         totalMins += duration;
 
-        if (id >= todayStart) {
+        // Use a 100ms buffer to catch items exactly at todayStart
+        if (id >= todayStart - 100) {
             todayMins += duration;
         }
-        if (id >= weekStart) {
+        if (id >= weekStart - 100) {
             weekMins += duration;
         }
     });
@@ -239,7 +240,8 @@ function calculateHistoryStats() {
     statsWeek.textContent = formatDuration(weekMins);
     statsTotal.textContent = formatDuration(totalMins);
 
-    console.log(`Stats updated: [Today: ${todayMins}m] [Week: ${weekMins}m] [Total: ${totalMins}m] from ${history.length} items.`);
+    console.log(`Stats updated: [Today: ${todayMins}m] [Week: ${weekMins}m] [Total: ${totalMins}m] items: ${history.length}`);
+    console.log(`Debug - TodayStart: ${new Date(todayStart).toLocaleString()}, WeekStart: ${new Date(weekStart).toLocaleString()}`);
 }
 
 function renderHistory() {
@@ -310,19 +312,33 @@ function updateHistoryItem(id, type, value) {
     } else if (type === 'date') {
         let newDate = new Date(value);
 
-        // Fallback for missing year or custom formats
+        // Super-robust fallback parsing
         if (isNaN(newDate.getTime())) {
-            // Try standardizing dots/slashes
-            const cleanValue = value.replace(/[\.\/]/g, '-');
-            newDate = new Date(cleanValue);
+            // Try Month Day format (e.g., "Jan 20")
+            const months = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
+            const mMatch = value.toLowerCase().match(/(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s+(\d{1,2})/);
 
-            // If still invalid, try the DD.MM.YYYY logic
-            if (isNaN(newDate.getTime())) {
-                const parts = value.match(/(\d{1,2})[\.\/](\d{1,2})([\.\/](\d{2,4}))?/);
-                if (parts) {
-                    const day = parseInt(parts[1]);
-                    const month = parseInt(parts[2]) - 1;
-                    let year = parts[4] ? parseInt(parts[4]) : new Date().getFullYear();
+            if (mMatch) {
+                const month = months.indexOf(mMatch[1]);
+                const day = parseInt(mMatch[2]);
+                const year = new Date().getFullYear();
+                // Extract time if present (e.g., 06:46 PM)
+                const tMatch = value.match(/(\d{1,2}):(\d{1,2})(\s*(am|pm))?/i);
+                let hour = 0, min = 0;
+                if (tMatch) {
+                    hour = parseInt(tMatch[1]);
+                    min = parseInt(tMatch[2]);
+                    if (tMatch[4]?.toLowerCase() === 'pm' && hour < 12) hour += 12;
+                    if (tMatch[4]?.toLowerCase() === 'am' && hour === 12) hour = 0;
+                }
+                newDate = new Date(year, month, day, hour, min);
+            } else {
+                // Try DD.MM.YYYY logic
+                const dMatch = value.match(/(\d{1,2})[\.\/](\d{1,2})([\.\/](\d{2,4}))?/);
+                if (dMatch) {
+                    const day = parseInt(dMatch[1]);
+                    const month = parseInt(dMatch[2]) - 1;
+                    let year = dMatch[4] ? parseInt(dMatch[4]) : new Date().getFullYear();
                     if (year < 100) year += 2000;
                     newDate = new Date(year, month, day);
                 }
@@ -330,14 +346,15 @@ function updateHistoryItem(id, type, value) {
         }
 
         if (!isNaN(newDate.getTime())) {
-            // Check if the year is unusually low (e.g., partial date parsed as year 2001 or similar)
-            // If year < 1000, it's probably a botched parse, fallback to current year
-            if (newDate.getFullYear() < 1000) {
+            // Year Guard: If browser defaulted to something weird like 2001, reset to current year
+            if (newDate.getFullYear() < 2010) {
                 newDate.setFullYear(new Date().getFullYear());
             }
 
             history[itemIndex].id = Number(newDate.getTime());
             history.sort((a, b) => b.id - a.id);
+        } else {
+            console.error(`Failed to parse date: "${value}"`);
         }
     }
 
