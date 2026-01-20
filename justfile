@@ -12,6 +12,7 @@ status:
 
 # Stage all changes and commit with a message
 commit message:
+    @echo "Reminder: Did you update README.md/docs for these changes?"
     git add .
     git commit -m "{{message}}"
 
