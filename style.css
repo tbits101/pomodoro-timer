@@ -20,12 +20,12 @@ body {
     background-image: linear-gradient(43deg, var(--bg-gradient-1) 0%, var(--bg-gradient-2) 46%, var(--bg-gradient-3) 100%);
     background-size: 200% 200%;
     animation: gradientBG 15s ease infinite;
-    height: 100vh;
+    min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
     color: var(--text-primary);
-    overflow: hidden;
+    padding: 2rem 0;
 }
 
 @keyframes gradientBG {
@@ -234,12 +234,39 @@ body {
 }
 
 @media (max-width: 480px) {
+    .container {
+        padding: 1rem;
+    }
+
     .timer-display {
         font-size: 4.5rem;
     }
 
     .glass-card {
-        padding: 2rem 1.5rem;
+        padding: 1.5rem 1rem;
+    }
+
+    .title {
+        font-size: 1.2rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .timer-container {
+        width: 260px;
+        height: 260px;
+        margin-bottom: 1.5rem;
+    }
+
+    .progress-ring {
+        width: 260px;
+        height: 260px;
+    }
+
+    .progress-ring__circle,
+    .progress-ring__circle-bg {
+        r: 120;
+        cx: 130;
+        cy: 130;
     }
 }
 
@@ -638,10 +665,12 @@ input:checked+.slider:before {
 /* Task Queue Support */
 #active-task-display {
     position: relative;
-    padding: 1.5rem;
-    margin-bottom: 2rem;
+    padding: 1.2rem;
+    margin-bottom: 1.5rem;
     border: 1px solid rgba(255, 255, 255, 0.15);
     background: rgba(255, 255, 255, 0.1);
+    animation: fadeIn 0.3s ease;
+    /* Use static fade instead of float */
 }
 
 .input-group {
