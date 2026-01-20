@@ -51,7 +51,7 @@ Check out our **[Deployment Guide](DEPLOYMENT.md)** for easy instructions on how
 I've added a version log to the console. 
 1. Open Developer Tools (F12 or Right Click -> Inspect).
 2. Go to the "Console" tab.
-3. Look for the message: `Pomodoro Timer v1.3.1 - Loaded`.
+3. Look for the message: `Pomodoro Timer v1.4.0 - Loaded`.
 
 **How do I clear the cache for localhost?**
 Browsers sometimes hold onto old files. To force a refresh:
