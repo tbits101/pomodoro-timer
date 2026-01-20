@@ -73,7 +73,7 @@ We have a comprehensive plan to evolve this tool into a productivity powerhouse.
     - [x] **Direct Timer Edit**: Click the timer text to type a custom time.
 - **6. Settings (Basic)**
     - [x] Adjust work and break durations
-    - [ ] Enable/disable sounds toggle
+    - [x] Enable/disable sounds toggle
 
 ### 🟢 Intermediate Features (Quality of Life)
 - **7. Task List**
