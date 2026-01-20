@@ -81,6 +81,11 @@ function init() {
     inputs.short.value = modes.short;
     inputs.long.value = modes.long;
 
+    // Set Version Display
+    if (typeof APP_VERSION !== 'undefined' && typeof BUILD_TIME !== 'undefined') {
+        document.getElementById('app-version').textContent = `v${APP_VERSION} (Build ${BUILD_TIME})`;
+    }
+
     // Set initial timer
     resetTimer();
 }
