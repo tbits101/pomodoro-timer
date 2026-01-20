@@ -81,6 +81,7 @@ function init() {
     const savedHistory = localStorage.getItem('pomodoroHistory');
     if (savedHistory) {
         history = JSON.parse(savedHistory);
+        sanitizeHistory();
     }
 
     // Set initial custom values in inputs
@@ -183,6 +184,22 @@ function addToHistory(taskName) {
     renderHistory();
 }
 
+function sanitizeHistory() {
+    let changed = false;
+    history = history.map(item => {
+        const id = Number(item.id);
+        const duration = parseInt(item.duration);
+        if (item.id !== id || item.duration !== duration) {
+            changed = true;
+            return { ...item, id: isNaN(id) ? Date.now() : id, duration: isNaN(duration) ? 25 : duration };
+        }
+        return item;
+    });
+    if (changed) {
+        localStorage.setItem('pomodoroHistory', JSON.stringify(history));
+    }
+}
+
 function formatDuration(totalMins) {
     if (totalMins < 60) return `${totalMins}m`;
     const hours = Math.floor(totalMins / 60);
@@ -221,6 +238,8 @@ function calculateHistoryStats() {
     statsToday.textContent = formatDuration(todayMins);
     statsWeek.textContent = formatDuration(weekMins);
     statsTotal.textContent = formatDuration(totalMins);
+
+    console.log(`Stats updated: [Today: ${todayMins}m] [Week: ${weekMins}m] [Total: ${totalMins}m] from ${history.length} items.`);
 }
 
 function renderHistory() {
@@ -277,8 +296,8 @@ function updateHistoryItem(id, type, value) {
     if (type === 'task') {
         history[itemIndex].task = value;
     } else if (type === 'duration') {
-        // Parse "25m" or just "25"
-        const duration = parseInt(value);
+        // Parse "25m", "25 mins", or just "25"
+        const duration = parseInt(value.replace(/[^\d]/g, ''));
         if (!isNaN(duration) && duration > 0) {
             history[itemIndex].duration = duration;
         }
@@ -287,10 +306,14 @@ function updateHistoryItem(id, type, value) {
 
         // Fallback for DD.MM.YYYY or DD/MM/YYYY format common in many regions
         if (isNaN(newDate.getTime())) {
-            const parts = value.match(/(\d{1,2})[\.\/](\d{1,2})[\.\/](\d{4})/);
+            const parts = value.match(/(\d{1,2})[\.\/](\d{1,2})([\.\/](\d{2,4}))?/);
             if (parts) {
-                // months are 0-indexed in Date constructor (Jan = 0)
-                newDate = new Date(parseInt(parts[3]), parseInt(parts[2]) - 1, parseInt(parts[1]));
+                const day = parseInt(parts[1]);
+                const month = parseInt(parts[2]) - 1;
+                let year = parts[4] ? parseInt(parts[4]) : new Date().getFullYear();
+                if (year < 100) year += 2000; // Handle "26" as "2026"
+
+                newDate = new Date(year, month, day);
             }
         }
 
