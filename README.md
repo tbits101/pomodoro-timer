@@ -137,3 +137,9 @@ We have a comprehensive plan to evolve this tool into a productivity powerhouse.
 - `index.html`: Main structure.
 - `style.css`: All styles and animations.
 - `script.js`: Timer logic and notification handling.
+
+## Project Standards & Automation
+This repository uses `just` to enforce standards.
+- **Mandatory Documentation**: `just commit` and `just release` will fail if `README.md` hasn't been updated.
+- **Version Tracking**: `just bump` maintains the `version.js` file and build timestamps.
+- **AI-Agent Ready**: Follows rules defined in the `.agent/rules` directory.

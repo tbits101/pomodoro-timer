@@ -10,9 +10,17 @@ serve:
 status:
     git status
 
-# Stage all changes and commit with a message
-commit message:
-    @echo "Reminder: Did you update README.md/docs for these changes?"
+# Check if README.md has been modified compared to origin/main
+check-docs:
+    @if git diff --quiet origin/main -- README.md; then \
+        echo "WARNING: README.md has not been updated! Documentation is mandatory."; \
+        exit 1; \
+    else \
+        echo "Documentation check passed (README.md modified)."; \
+    fi
+
+# Stage all changes and commit with a message (requires documentation update)
+commit message: check-docs
     git add .
     git commit -m "{{message}}"
 
@@ -45,3 +53,9 @@ set-version ver:
     @sed -i "s/APP_VERSION = \".*\"/APP_VERSION = \"{{ver}}\"/" version.js; \
     sed -i "s/BUILD_TIME = \".*\"/BUILD_TIME = \"$(date +'%Y-%m-%d %H:%M')\"/" version.js; \
     echo "Version set to {{ver}}"
+
+# Full release: bump version, check docs, commit, push, and deploy
+release msg: bump check-docs
+    just commit "{{msg}}"
+    just push
+    just deploy
