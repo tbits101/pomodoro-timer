@@ -116,11 +116,13 @@ body {
 
 .summary-item {
     background: rgba(255, 255, 255, 0.05);
-    padding: 0.8rem 0.5rem;
+    padding: 0.8rem;
     border-radius: 16px;
-    text-align: center;
     border: 1px solid rgba(255, 255, 255, 0.03);
-    transition: transform 0.2s ease;
+    transition: transform 0.2s ease, background 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .summary-item:hover {
@@ -128,19 +130,57 @@ body {
     background: rgba(255, 255, 255, 0.08);
 }
 
+.summary-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
 .summary-label {
-    display: block;
     font-size: 0.65rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     opacity: 0.6;
-    margin-bottom: 0.4rem;
 }
 
 .summary-value {
     font-size: 1.1rem;
     font-weight: 600;
     color: white;
+}
+
+.total-summary {
+    text-align: center;
+    justify-content: center;
+}
+
+.total-summary .summary-label {
+    margin-bottom: 0.2rem;
+}
+
+/* Day/Week Goal Progress */
+.goal-progress-container {
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 0.4rem;
+}
+
+.goal-progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #ff6b6b, #ff8e8e);
+    border-radius: 10px;
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.goal-text {
+    font-size: 0.6rem;
+    opacity: 0.5;
+    text-align: right;
+    display: block;
 }
 
 .history-list {
@@ -872,6 +912,7 @@ input:checked+.slider:before {
     /* Use accent color for promotion */
     transform: translateY(-2px);
 }
+
 /* PWA Update Toast */
 .glass-toast {
     position: fixed;
@@ -911,6 +952,7 @@ input:checked+.slider:before {
         transform: translate(-50%, 100%);
         opacity: 0;
     }
+
     to {
         transform: translate(-50%, 0);
         opacity: 1;

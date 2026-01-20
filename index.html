@@ -100,6 +100,14 @@
                 <label>Long Break (minutes)</label>
                 <input type="number" id="long-time-input" value="15" min="1" max="60">
             </div>
+            <div class="setting-group">
+                <label>Daily Goal (hours)</label>
+                <input type="number" id="daily-goal-input" value="4" min="1" max="24">
+            </div>
+            <div class="setting-group">
+                <label>Weekly Goal (hours)</label>
+                <input type="number" id="weekly-goal-input" value="20" min="1" max="168">
+            </div>
             <div class="setting-group toggle-group">
                 <label for="sound-toggle">Enable Sound</label>
                 <label class="switch">
@@ -123,14 +131,26 @@
 
             <div id="history-summary" class="history-summary">
                 <div class="summary-item">
-                    <span class="summary-label">Today</span>
-                    <span id="stats-today" class="summary-value">0m</span>
+                    <div class="summary-header">
+                        <span class="summary-label">Today</span>
+                        <span id="stats-today" class="summary-value">0m</span>
+                    </div>
+                    <div class="goal-progress-container">
+                        <div id="goal-progress-today" class="goal-progress-fill"></div>
+                    </div>
+                    <span id="goal-text-today" class="goal-text">0% of 4h goal</span>
                 </div>
                 <div class="summary-item">
-                    <span class="summary-label">This Week</span>
-                    <span id="stats-week" class="summary-value">0m</span>
+                    <div class="summary-header">
+                        <span class="summary-label">This Week</span>
+                        <span id="stats-week" class="summary-value">0m</span>
+                    </div>
+                    <div class="goal-progress-container">
+                        <div id="goal-progress-week" class="goal-progress-fill"></div>
+                    </div>
+                    <span id="goal-text-week" class="goal-text">0% of 20h goal</span>
                 </div>
-                <div class="summary-item">
+                <div class="summary-item total-summary">
                     <span class="summary-label">Total</span>
                     <span id="stats-total" class="summary-value">0m</span>
                 </div>
@@ -153,7 +173,7 @@
                 navigator.serviceWorker.register('./sw.js')
                     .then(reg => {
                         console.log('Service Worker registered');
-                        
+
                         reg.addEventListener('updatefound', () => {
                             const newWorker = reg.installing;
                             newWorker.addEventListener('statechange', () => {

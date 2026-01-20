@@ -12,6 +12,13 @@ let timeLeft = modes[currentMode] * 60;
 let timerId = null;
 let isRunning = false;
 
+// Goals State (hours)
+const DEFAULT_GOALS = {
+    daily: 4,
+    weekly: 20
+};
+let goals = { ...DEFAULT_GOALS };
+
 // DOM Elements
 const timeDisplay = document.getElementById('time-display');
 const startBtn = document.getElementById('start-btn');
@@ -49,8 +56,16 @@ const closeModalBtn = document.getElementById('close-modal-btn');
 const inputs = {
     focus: document.getElementById('focus-time-input'),
     short: document.getElementById('short-time-input'),
-    long: document.getElementById('long-time-input')
+    long: document.getElementById('long-time-input'),
+    dailyGoal: document.getElementById('daily-goal-input'),
+    weeklyGoal: document.getElementById('weekly-goal-input')
 };
+
+// Goal Display Elements
+const goalProgressToday = document.getElementById('goal-progress-today');
+const goalProgressWeek = document.getElementById('goal-progress-week');
+const goalTextToday = document.getElementById('goal-text-today');
+const goalTextWeek = document.getElementById('goal-text-week');
 
 // --- Initialization ---
 
@@ -84,10 +99,18 @@ function init() {
         sanitizeHistory();
     }
 
+    // Load goals from localStorage
+    const savedGoals = localStorage.getItem('pomodoroGoals');
+    if (savedGoals) {
+        goals = JSON.parse(savedGoals);
+    }
+
     // Set initial custom values in inputs
     inputs.focus.value = modes.focus;
     inputs.short.value = modes.short;
     inputs.long.value = modes.long;
+    inputs.dailyGoal.value = goals.daily;
+    inputs.weeklyGoal.value = goals.weekly;
 
     // Set Version Display
     if (typeof APP_VERSION !== 'undefined' && typeof BUILD_TIME !== 'undefined') {
@@ -137,15 +160,21 @@ function saveSettings() {
     const newFocus = parseInt(inputs.focus.value);
     const newShort = parseInt(inputs.short.value);
     const newLong = parseInt(inputs.long.value);
+    const newDailyGoal = parseFloat(inputs.dailyGoal.value);
+    const newWeeklyGoal = parseFloat(inputs.weeklyGoal.value);
 
     // Basic Validation
     if (newFocus > 0) modes.focus = newFocus;
     if (newShort > 0) modes.short = newShort;
     if (newLong > 0) modes.long = newLong;
+    if (newDailyGoal > 0) goals.daily = newDailyGoal;
+    if (newWeeklyGoal > 0) goals.weekly = newWeeklyGoal;
 
     localStorage.setItem('pomodoroModes', JSON.stringify(modes));
+    localStorage.setItem('pomodoroGoals', JSON.stringify(goals));
 
     settingsModal.classList.remove('open');
+    calculateHistoryStats(); // Refresh stats/goals
     if (!isRunning) {
         resetTimer();
     }
@@ -240,8 +269,34 @@ function calculateHistoryStats() {
     statsWeek.textContent = formatDuration(weekMins);
     statsTotal.textContent = formatDuration(totalMins);
 
+    // Update Goal Progress
+    updateGoalUI(todayMins, weekMins);
+
     console.log(`Stats updated: [Today: ${todayMins}m] [Week: ${weekMins}m] [Total: ${totalMins}m] items: ${history.length}`);
     console.log(`Debug - TodayStart: ${new Date(todayStart).toLocaleString()}, WeekStart: ${new Date(weekStart).toLocaleString()}`);
+}
+
+function updateGoalUI(todayMins, weekMins) {
+    const dailyGoalMins = goals.daily * 60;
+    const weeklyGoalMins = goals.weekly * 60;
+
+    const dailyPercent = Math.min(100, Math.round((todayMins / dailyGoalMins) * 100)) || 0;
+    const weeklyPercent = Math.min(100, Math.round((weekMins / weeklyGoalMins) * 100)) || 0;
+
+    goalProgressToday.style.width = `${dailyPercent}%`;
+    goalProgressWeek.style.width = `${weeklyPercent}%`;
+
+    goalTextToday.textContent = `${dailyPercent}% of ${goals.daily}h goal`;
+    goalTextWeek.textContent = `${weeklyPercent}% of ${goals.weekly}h goal`;
+
+    // Visual feedback when goal reached
+    goalProgressToday.style.background = dailyPercent >= 100
+        ? 'linear-gradient(90deg, #4ade80, #22c55e)' // Green for reached
+        : 'linear-gradient(90deg, #ff6b6b, #ff8e8e)';
+
+    goalProgressWeek.style.background = weeklyPercent >= 100
+        ? 'linear-gradient(90deg, #4ade80, #22c55e)'
+        : 'linear-gradient(90deg, #ff6b6b, #ff8e8e)';
 }
 
 function renderHistory() {
