@@ -8,7 +8,7 @@ A beautiful, glassmorphism-styled Pomodoro timer built with vanilla HTML, CSS, a
 - **25-minute Focus Timer**: Standard Pomodoro duration.
 - **Customizable Modes**: Switch between Focus, Short Break (5m), and Long Break (15m).
 - **Settings**: Customize the duration of each mode; saves to your browser.
-- **History Log**: Tracks your completed sessions; now with **Inline Editing** for titles, durations, and dates. Includes daily and weekly (Monday-start) summaries with ultra-robust date tracking and automated PWA cache synchronization.
+- **History Log**: Tracks your completed sessions; now with **Inline Editing** for titles, durations, and dates. Includes daily and weekly (Monday-start) summaries with ultra-robust date tracking and automated PWA cache synchronization (v1.6+).
 - **Glassmorphism Design**: Modern UI with animated gradient backgrounds.
 - **Theming**: Color schemes change based on the active mode.
 - **Audio & Visual Alerts**: Plays a sound and sends a browser notification when the timer ends.

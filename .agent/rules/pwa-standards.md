@@ -9,8 +9,8 @@ The Pomodoro Timer is a Progressive Web App (PWA). Reliability and installabilit
 
 ## Service Worker (`sw.js`)
 - **Offline Support**: The service worker must cache all critical local assets (`index.html`, `style.css`, `script.js`, etc.).
-- **Cache Management**: Always update the `CACHE_NAME` when making significant changes to assets.
-  - **Tip**: Use `just bump` to increment the app version and build timestamp, which helps tracking and cache busting.
+- **Cache Management**: The `CACHE_NAME` is automatically synchronized with the app version.
+  - **Required**: Use `just bump` or `just set-version` to ensure the PWA cache is busted when updating assets.
 - **Fetch Strategy**: Current strategy is "Cache First, fallback to Network" for maximum speed.
 
 ## Icons
