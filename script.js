@@ -255,9 +255,15 @@ function renderHistory() {
         const li = document.createElement('li');
         li.className = 'history-item';
 
-        // Simple date formatting
+        // Simple date formatting - Include year for unambiguous parsing back
         const dateObj = new Date(item.id);
-        const dateStr = dateObj.toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+        const dateStr = dateObj.toLocaleDateString(undefined, {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
 
         li.innerHTML = `
             <div class="history-info">
@@ -304,23 +310,33 @@ function updateHistoryItem(id, type, value) {
     } else if (type === 'date') {
         let newDate = new Date(value);
 
-        // Fallback for DD.MM.YYYY or DD/MM/YYYY format common in many regions
+        // Fallback for missing year or custom formats
         if (isNaN(newDate.getTime())) {
-            const parts = value.match(/(\d{1,2})[\.\/](\d{1,2})([\.\/](\d{2,4}))?/);
-            if (parts) {
-                const day = parseInt(parts[1]);
-                const month = parseInt(parts[2]) - 1;
-                let year = parts[4] ? parseInt(parts[4]) : new Date().getFullYear();
-                if (year < 100) year += 2000; // Handle "26" as "2026"
+            // Try standardizing dots/slashes
+            const cleanValue = value.replace(/[\.\/]/g, '-');
+            newDate = new Date(cleanValue);
 
-                newDate = new Date(year, month, day);
+            // If still invalid, try the DD.MM.YYYY logic
+            if (isNaN(newDate.getTime())) {
+                const parts = value.match(/(\d{1,2})[\.\/](\d{1,2})([\.\/](\d{2,4}))?/);
+                if (parts) {
+                    const day = parseInt(parts[1]);
+                    const month = parseInt(parts[2]) - 1;
+                    let year = parts[4] ? parseInt(parts[4]) : new Date().getFullYear();
+                    if (year < 100) year += 2000;
+                    newDate = new Date(year, month, day);
+                }
             }
         }
 
         if (!isNaN(newDate.getTime())) {
-            // Ensure we are using a number (timestamp) and it is treated as LOCAL
+            // Check if the year is unusually low (e.g., partial date parsed as year 2001 or similar)
+            // If year < 1000, it's probably a botched parse, fallback to current year
+            if (newDate.getFullYear() < 1000) {
+                newDate.setFullYear(new Date().getFullYear());
+            }
+
             history[itemIndex].id = Number(newDate.getTime());
-            // Re-sort history by ID (timestamp) descending
             history.sort((a, b) => b.id - a.id);
         }
     }
