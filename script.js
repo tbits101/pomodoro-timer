@@ -52,7 +52,11 @@ const inputs = {
 // --- Initialization ---
 
 function init() {
-    console.log("Pomodoro Timer v1.2.0 - Loaded");
+    if (typeof APP_VERSION !== 'undefined' && typeof BUILD_TIME !== 'undefined') {
+        console.log(`Pomodoro Timer v${APP_VERSION} (Build ${BUILD_TIME}) - Loaded`);
+    } else {
+        console.log("Pomodoro Timer - Loaded");
+    }
     // Setup Ring
 
     // Recalculate circumference based on actual or fallback radius
