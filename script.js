@@ -204,13 +204,16 @@ function calculateHistoryStats() {
     let weekMins = 0;
 
     history.forEach(item => {
+        const id = Number(item.id);
+        if (isNaN(id)) return;
+
         const duration = parseInt(item.duration) || 0;
         totalMins += duration;
 
-        if (item.id >= todayStart) {
+        if (id >= todayStart) {
             todayMins += duration;
         }
-        if (item.id >= weekStart) {
+        if (id >= weekStart) {
             weekMins += duration;
         }
     });
@@ -282,18 +285,18 @@ function updateHistoryItem(id, type, value) {
     } else if (type === 'date') {
         let newDate = new Date(value);
 
-        // Fallback for DD.MM.YYYY format common in many regions
+        // Fallback for DD.MM.YYYY or DD/MM/YYYY format common in many regions
         if (isNaN(newDate.getTime())) {
-            const parts = value.match(/(\d{1,2})[\.](\d{1,2})[\.](\d{4})/);
+            const parts = value.match(/(\d{1,2})[\.\/](\d{1,2})[\.\/](\d{4})/);
             if (parts) {
-                // Construct YYYY-MM-DD (Month is 0-indexed in Date constructor if we use numbers, 
-                // but strings are 1-indexed. Let's use the string format YYYY-MM-DD)
-                newDate = new Date(`${parts[3]}-${parts[2].padStart(2, '0')}-${parts[1].padStart(2, '0')}`);
+                // months are 0-indexed in Date constructor (Jan = 0)
+                newDate = new Date(parseInt(parts[3]), parseInt(parts[2]) - 1, parseInt(parts[1]));
             }
         }
 
         if (!isNaN(newDate.getTime())) {
-            history[itemIndex].id = newDate.getTime();
+            // Ensure we are using a number (timestamp) and it is treated as LOCAL
+            history[itemIndex].id = Number(newDate.getTime());
             // Re-sort history by ID (timestamp) descending
             history.sort((a, b) => b.id - a.id);
         }
