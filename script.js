@@ -198,11 +198,11 @@ function renderHistory() {
 
         li.innerHTML = `
             <div class="history-info">
-                <span class="history-task">${item.task}</span>
+                <span class="history-task" contenteditable="true" data-id="${item.id}" data-type="task">${item.task}</span>
                 <span class="history-time">${dateStr}</span>
             </div>
             <div class="history-actions">
-                <span class="history-duration">${item.duration}m</span>
+                <span class="history-duration" contenteditable="true" data-id="${item.id}" data-type="duration">${item.duration}m</span>
                 <button class="delete-item-btn" data-id="${item.id}" aria-label="Delete item">✕</button>
             </div>
         `;
@@ -225,6 +225,50 @@ function deleteHistoryItem(id) {
     localStorage.setItem('pomodoroHistory', JSON.stringify(history));
     renderHistory();
 }
+
+function updateHistoryItem(id, type, value) {
+    const itemIndex = history.findIndex(item => item.id === id);
+    if (itemIndex === -1) return;
+
+    if (type === 'task') {
+        history[itemIndex].task = value;
+    } else if (type === 'duration') {
+        // Parse "25m" or just "25"
+        const duration = parseInt(value);
+        if (!isNaN(duration) && duration > 0) {
+            history[itemIndex].duration = duration;
+        }
+    }
+
+    localStorage.setItem('pomodoroHistory', JSON.stringify(history));
+    // Don't re-render everything to maintain focus, just update UI if needed
+    // But for duration we might want to re-format it to "Xm"
+    if (type === 'duration') {
+        renderHistory();
+    }
+}
+
+// History Inline Editing Delegation
+historyList.addEventListener('focusout', (e) => {
+    if (e.target.hasAttribute('contenteditable')) {
+        const id = parseInt(e.target.dataset.id);
+        const type = e.target.dataset.type;
+        const newValue = e.target.innerText.trim().replace(/m$/, ''); // Remove trailing 'm' if present
+
+        if (newValue || type === 'task') {
+            updateHistoryItem(id, type, newValue);
+        } else {
+            renderHistory(); // Revert
+        }
+    }
+});
+
+historyList.addEventListener('keydown', (e) => {
+    if (e.target.hasAttribute('contenteditable') && e.key === 'Enter') {
+        e.preventDefault();
+        e.target.blur();
+    }
+});
 
 // --- Timer Logic ---
 

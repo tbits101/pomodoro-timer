@@ -605,6 +605,15 @@ body.long-break .mode-btn.active {
     transform: scale(1.1);
 }
 
+.history-task:focus,
+.history-duration:focus {
+    outline: none;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
+    padding: 0 4px;
+}
+
+
 /* Toggle Switch */
 .toggle-group {
     display: flex;
