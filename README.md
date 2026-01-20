@@ -31,6 +31,8 @@ A beautiful, glassmorphism-styled Pomodoro timer built with vanilla HTML, CSS, a
    - `just commit "Your message"`: Stage and commit changes.
    - `just push`: Push changes to the main branch.
    - `just deploy`: Deploy to GitHub Pages (merges main to gh-pages).
+   - `just version`: Show current app version.
+   - `just bump`: Increment patch version and update build time.
    - `just`: List all available commands.
     
     **Restoration/Restarting**:
