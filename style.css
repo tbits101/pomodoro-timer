@@ -537,6 +537,7 @@ body.long-break .mode-btn.active {
     background: rgba(255, 255, 255, 0.1);
     transform: translateY(-1px);
 }
+
 /* Timer Input (Direct Edit) */
 .timer-input {
     font-size: 6rem;
@@ -585,7 +586,8 @@ body.long-break .mode-btn.active {
 }
 
 .toggle-group label {
-    margin-bottom: 0; /* Override generic setting-group label */
+    margin-bottom: 0;
+    /* Override generic setting-group label */
 }
 
 .switch {
@@ -625,10 +627,171 @@ body.long-break .mode-btn.active {
     border-radius: 50%;
 }
 
-input:checked + .slider {
+input:checked+.slider {
     background-color: var(--accent);
 }
 
-input:checked + .slider:before {
+input:checked+.slider:before {
     transform: translateX(24px);
+}
+
+/* Task Queue Support */
+#active-task-display {
+    position: relative;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.input-group {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+#task-input {
+    flex: 1;
+}
+
+#add-task-btn {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+#add-task-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+.queue-container {
+    margin-top: 1rem;
+}
+
+.task-queue-list {
+    list-style: none;
+    padding: 0;
+}
+
+.queue-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 0.8rem 1rem;
+    border-radius: 12px;
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.2s;
+}
+
+.queue-item:hover {
+    background: rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.remove-queue-btn {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.4);
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 0 0.5rem;
+    transition: color 0.2s;
+}
+
+.remove-queue-btn:hover {
+    color: #ff6b6b;
+}
+
+/* Task Queue Enhancements */
+.task-queue-list {
+    max-height: 140px;
+    /* Reduced to show ~3 items before scrolling, ensuring button visibility */
+    overflow-y: auto;
+    padding-right: 0.5rem;
+    /* Space for scrollbar */
+}
+
+/* Custom Scrollbar for Queue */
+.task-queue-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.task-queue-list::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 3px;
+}
+
+.task-queue-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+}
+
+.task-queue-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* Queue Item Updates */
+.queue-item {
+    cursor: grab;
+    /* Indicate draggable */
+    user-select: none;
+    /* Prevent text selection while dragging */
+}
+
+.queue-item.dragging {
+    opacity: 0.5;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.drag-handle {
+    cursor: grab;
+    opacity: 0.5;
+    margin-right: 0.8rem;
+    font-size: 1.2rem;
+    line-height: 1;
+}
+
+.task-text {
+    flex: 1;
+    outline: none;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    transition: background 0.2s;
+    cursor: text;
+}
+
+.task-text:focus {
+    background: rgba(255, 255, 255, 0.1);
+    cursor: text;
+}
+
+.item-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.promote-btn {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.4);
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.2s;
+}
+
+.promote-btn:hover {
+    color: var(--accent);
+    /* Use accent color for promotion */
+    transform: translateY(-2px);
 }

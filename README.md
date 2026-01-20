@@ -76,10 +76,12 @@ We have a comprehensive plan to evolve this tool into a productivity powerhouse.
     - [x] Enable/disable sounds toggle
 
 ### 🟢 Intermediate Features (Quality of Life)
-- **7. Task List**
-    - [x] Add current task focus
-    - [ ] Multiple tasks queue
-    - [x] Mark tasks complete
+- **7. Task List & Queue**
+    - [x] **Task Queue**: Add multiple tasks to an "Up Next" list.
+    - [x] **Auto-Advance**: Automatically switch to the next task upon completion.
+    - [x] **Drag & Drop**: Reorder tasks easily.
+    - [x] **Inline Editing**: Click any task to edit its text.
+    - [x] **Promotion**: Instantly make any queued task the current active one.
 - **8. Auto-Start Options**
     - [ ] Auto-start next work session
     - [ ] Auto-start breaks

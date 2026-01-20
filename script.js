@@ -350,50 +350,223 @@ timeDisplay.addEventListener('click', () => {
     });
 });
 
-// --- Task Logic ---
-taskInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter' && taskInput.value.trim() !== '') {
-        currentTaskText.textContent = taskInput.value;
-        taskInput.classList.add('hidden');
-        taskDisplay.classList.remove('hidden');
-        updateDisplay(); // Update title
+// --- Task Queue Logic ---
+let taskQueue = []; // Array of objects or strings? Let's use objects { id, text }
+
+// Load Queue
+const savedQueue = localStorage.getItem('pomodoroTaskQueue');
+if (savedQueue) {
+    taskQueue = JSON.parse(savedQueue);
+}
+
+// Global Elements for Queue
+const activeTaskDisplay = document.getElementById('active-task-display');
+const taskInputGroup = document.getElementById('task-input-group');
+const addTaskBtn = document.getElementById('add-task-btn');
+const queueContainer = document.getElementById('queue-container');
+const taskQueueList = document.getElementById('task-queue-list');
+// Re-bind existing elements that might have moved or changed context
+// completeTaskBtn is now inside active-task-display
+
+function saveQueue() {
+    localStorage.setItem('pomodoroTaskQueue', JSON.stringify(taskQueue));
+    updateTaskUI();
+}
+
+function updateTaskUI() {
+    // 1. Active Task
+    if (taskQueue.length > 0) {
+        const active = taskQueue[0];
+        currentTaskText.textContent = active.text;
+        activeTaskDisplay.classList.remove('hidden');
+        document.title = `${formatTime(timeLeft)} - [${active.text}] ${currentMode === 'focus' ? 'Focus' : 'Break'}`;
+    } else {
+        currentTaskText.textContent = '';
+        activeTaskDisplay.classList.add('hidden');
+        document.title = `${formatTime(timeLeft)} - ${currentMode === 'focus' ? 'Focus' : 'Break'}`;
     }
-});
 
-clearTaskBtn.addEventListener('click', () => {
-    currentTaskText.textContent = '';
+    // 2. Queue List (Items 1 to end)
+    taskQueueList.innerHTML = '';
+    if (taskQueue.length > 1) {
+        queueContainer.classList.remove('hidden');
+        const upcoming = taskQueue.slice(1);
+        upcoming.forEach((task, i) => {
+            const index = i + 1; // Actual index in taskQueue
+            const li = document.createElement('li');
+            li.className = 'queue-item';
+            li.draggable = true;
+            li.dataset.index = index;
+
+            li.innerHTML = `
+                <div class="drag-handle">⋮⋮</div>
+                <span class="task-text" contenteditable="true" data-index="${index}">${task.text}</span>
+                <div class="item-actions">
+                    <button class="promote-btn" data-index="${index}" title="Make Current">⬆</button>
+                    <button class="remove-queue-btn" data-index="${index}" title="Remove">✕</button>
+                </div>
+            `;
+            taskQueueList.appendChild(li);
+        });
+    } else {
+        queueContainer.classList.add('hidden');
+    }
+}
+
+function addTaskToQueue(text) {
+    if (!text) return;
+    taskQueue.push({ id: Date.now(), text });
+    saveQueue();
     taskInput.value = '';
-    taskDisplay.classList.add('hidden');
-    taskInput.classList.remove('hidden');
-    taskInput.focus();
-    updateDisplay(); // Update title
-});
+}
 
-completeTaskBtn.addEventListener('click', () => {
-    // 1. Notify user
+function completeActiveTask() {
+    if (taskQueue.length === 0) return;
+
+    const completed = taskQueue.shift(); // Remove top
+    saveQueue(); // Save new state
+
+    // Notify
     if ('Notification' in window && Notification.permission === 'granted') {
         new Notification('Task Completed!', {
-            body: `You finished "${currentTaskText.textContent}". Enjoy your break!`,
+            body: `You finished "${completed.text}". Great job!`,
             icon: 'https://cdn-icons-png.flaticon.com/512/2928/2928750.png'
         });
     }
 
-    // 2. Clear task (or keep it as "Completed" list? For now just clear inputs)
-    const completedTask = currentTaskText.textContent;
-    currentTaskText.textContent = '';
-    taskInput.value = '';
-    taskDisplay.classList.add('hidden');
-    taskInput.classList.remove('hidden');
+    // History
+    addToHistory(completed.text);
 
-    // 2.5 Add to History
-    addToHistory(completedTask);
-
-    // 3. Switch to Short Break
+    // Switch to Short Break
     switchMode('short');
+}
 
-    // 4. Reset Timer (already done by switchMode)
-    // Optional: Auto start break? Let's leave it manual start for control.
+function removeTaskFromQueue(index) {
+    // Index is relative to the full array
+    taskQueue.splice(index, 1);
+    saveQueue();
+}
+
+function promoteTask(index) {
+    if (index <= 0 || index >= taskQueue.length) return;
+
+    // Remove from current position
+    const [task] = taskQueue.splice(index, 1);
+    // Add to top (current)
+    taskQueue.unshift(task);
+
+    saveQueue();
+}
+
+function updateTaskText(index, newText) {
+    if (taskQueue[index]) {
+        taskQueue[index].text = newText;
+        localStorage.setItem('pomodoroTaskQueue', JSON.stringify(taskQueue));
+    }
+}
+
+// Input Handlers
+taskInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter' && taskInput.value.trim() !== '') {
+        addTaskToQueue(taskInput.value.trim());
+    }
 });
+
+addTaskBtn.addEventListener('click', () => {
+    if (taskInput.value.trim() !== '') {
+        addTaskToQueue(taskInput.value.trim());
+    }
+});
+
+activeTaskDisplay.addEventListener('click', (e) => {
+    // Handle buttons inside valid task display
+    if (e.target.id === 'complete-task-btn') {
+        completeActiveTask();
+    } else if (e.target.id === 'clear-task-btn') {
+        // Cancel task (remove without history?)
+        if (confirm('Cancel current task?')) {
+            taskQueue.shift();
+            saveQueue();
+        }
+    }
+});
+
+// Queue Interactions (Delegation)
+taskQueueList.addEventListener('click', (e) => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+
+    const index = parseInt(btn.dataset.index);
+
+    if (btn.classList.contains('remove-queue-btn')) {
+        removeTaskFromQueue(index);
+    } else if (btn.classList.contains('promote-btn')) {
+        promoteTask(index);
+    }
+});
+
+// Editing Logic
+taskQueueList.addEventListener('focusout', (e) => {
+    if (e.target.classList.contains('task-text')) {
+        const index = parseInt(e.target.dataset.index);
+        const newText = e.target.innerText.trim();
+        if (newText) {
+            updateTaskText(index, newText);
+        } else {
+            updateTaskUI(); // Revert empty edits
+        }
+    }
+});
+
+taskQueueList.addEventListener('keydown', (e) => {
+    if (e.target.classList.contains('task-text') && e.key === 'Enter') {
+        e.preventDefault(); // Prevent newline
+        e.target.blur(); // Trigger focusout to save
+    }
+});
+
+// Drag and Drop Logic
+let draggedItemIndex = null;
+
+taskQueueList.addEventListener('dragstart', (e) => {
+    const item = e.target.closest('.queue-item');
+    if (item) {
+        draggedItemIndex = parseInt(item.dataset.index);
+        item.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+    }
+});
+
+taskQueueList.addEventListener('dragend', (e) => {
+    const item = e.target.closest('.queue-item');
+    if (item) item.classList.remove('dragging');
+    draggedItemIndex = null;
+});
+
+taskQueueList.addEventListener('dragover', (e) => {
+    e.preventDefault(); // Allow drop
+    e.dataTransfer.dropEffect = 'move';
+});
+
+taskQueueList.addEventListener('drop', (e) => {
+    e.preventDefault();
+    const targetItem = e.target.closest('.queue-item');
+    if (targetItem) {
+        const targetIndex = parseInt(targetItem.dataset.index);
+        if (draggedItemIndex !== null && draggedItemIndex !== targetIndex) {
+            const [item] = taskQueue.splice(draggedItemIndex, 1);
+            let insertPos = targetIndex;
+            if (draggedItemIndex < targetIndex) {
+                insertPos = targetIndex - 1;
+            }
+            taskQueue.splice(insertPos, 0, item);
+            saveQueue();
+        }
+    }
+});
+
+// Initial Render
+updateTaskUI();
 
 // --- Event Listeners ---
 
