@@ -667,6 +667,17 @@ body.long-break .mode-btn.active {
     font-weight: 600;
     margin-bottom: 0.5rem;
     display: inline-block;
+    transition: background 0.2s ease;
+}
+
+#current-task-text:hover {
+    background: rgba(255, 255, 255, 0.1);
+    cursor: text;
+}
+
+#current-task-text:focus {
+    background: rgba(255, 255, 255, 0.15);
+    outline: none;
 }
 
 .hidden {

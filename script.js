@@ -774,6 +774,21 @@ function addTaskToQueue(text) {
 function completeActiveTask() {
     if (taskQueue.length === 0) return;
 
+    // Calculate elapsed time BEFORE shifting/switching
+    let durationMins;
+    if (currentMode === 'flowtime') {
+        durationMins = Math.ceil(elapsedFlowtime / 60);
+    } else {
+        // Includes 'focus', 'short', 'long' although we only care about focus usually
+        const totalSecs = modes[currentMode] * 60;
+        durationMins = Math.ceil((totalSecs - timeLeft) / 60);
+    }
+
+    // Ensure at least 1 min if they spent any time
+    if (durationMins === 0 && (elapsedFlowtime > 0 || (currentMode === 'focus' && timeLeft < modes.focus * 60))) {
+        durationMins = 1;
+    }
+
     const completed = taskQueue.shift(); // Remove top
     saveQueue(); // Save new state
 
@@ -786,10 +801,25 @@ function completeActiveTask() {
     }
 
     // History
-    addToHistory(completed.text);
+    addToHistory(completed.text, durationMins);
 
-    // Switch to Short Break
-    switchMode('short');
+    // If we were in flowtime, we calculate the special break
+    if (currentMode === 'flowtime') {
+        const breakMins = Math.max(1, Math.floor(elapsedFlowtime / 60 / flowtimeRatio));
+        switchMode('short'); // Reset timer state
+        timeLeft = breakMins * 60;
+        if (autoTransition) {
+            startTimer();
+        } else {
+            updateDisplay();
+        }
+    } else {
+        // Standard Pomodoro flow
+        switchMode('short');
+        if (autoTransition) {
+            startTimer();
+        }
+    }
 }
 
 function removeTaskFromQueue(index) {
@@ -873,6 +903,25 @@ taskQueueList.addEventListener('keydown', (e) => {
     if (e.target.classList.contains('task-text') && e.key === 'Enter') {
         e.preventDefault(); // Prevent newline
         e.target.blur(); // Trigger focusout to save
+    }
+});
+
+// Current Task Editing
+currentTaskText.addEventListener('focusout', () => {
+    const newText = currentTaskText.innerText.trim();
+    if (newText && taskQueue.length > 0) {
+        taskQueue[0].text = newText;
+        localStorage.setItem('pomodoroTaskQueue', JSON.stringify(taskQueue));
+        updateDisplay(); // Update document title
+    } else {
+        updateTaskUI(); // Revert
+    }
+});
+
+currentTaskText.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        currentTaskText.blur();
     }
 });
 
