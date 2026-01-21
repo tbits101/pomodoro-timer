@@ -21,6 +21,7 @@
 
             <div class="mode-switcher">
                 <button class="mode-btn active" data-mode="focus">Focus</button>
+                <button class="mode-btn" data-mode="flowtime">Flowtime</button>
                 <button class="mode-btn" data-mode="short">Short Break</button>
                 <button class="mode-btn" data-mode="long">Long Break</button>
             </div>
@@ -103,6 +104,15 @@
             <div class="setting-group">
                 <label>Long Break Interval</label>
                 <input type="number" id="long-break-interval-input" value="4" min="1" max="10">
+            </div>
+            <div class="setting-group">
+                <label>Flowtime Break Ratio</label>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span>1 /</span>
+                    <input type="number" id="flowtime-ratio-input" value="5" min="2" max="10" style="flex: 1;">
+                </div>
+                <small style="opacity: 0.5; font-size: 0.7rem; margin-top: 0.2rem; display: block;">e.g., 5 means 1 min
+                    break for every 5 mins work</small>
             </div>
             <div class="setting-group">
                 <label>Session Preset</label>

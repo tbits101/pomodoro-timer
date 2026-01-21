@@ -176,6 +176,19 @@ body {
     transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+body.flowtime-break {
+    --bg-gradient-1: #4c51bf;
+    --bg-gradient-2: #667eea;
+}
+
+body.flowtime-break .primary {
+    color: #4c51bf;
+}
+
+body.flowtime-break .mode-btn.active {
+    color: #4c51bf;
+}
+
 .goal-text {
     font-size: 0.6rem;
     opacity: 0.5;

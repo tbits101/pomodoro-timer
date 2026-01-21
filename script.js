@@ -19,9 +19,10 @@ const DEFAULT_GOALS = {
 let goals = { ...DEFAULT_GOALS };
 
 // Session Flow State
-let autoTransition = true;
 let longBreakInterval = 4;
 let focusCount = 0; // Cumulative focus sessions in one loop
+let flowtimeRatio = 5;
+let elapsedFlowtime = 0; // Track seconds in Flowtime
 
 // DOM Elements
 const timeDisplay = document.getElementById('time-display');
@@ -64,6 +65,7 @@ const inputs = {
     longBreakInterval: document.getElementById('long-break-interval-input'),
     autoTransition: document.getElementById('auto-transition-toggle'),
     preset: document.getElementById('preset-select'),
+    flowtimeRatio: document.getElementById('flowtime-ratio-input'),
     dailyGoal: document.getElementById('daily-goal-input'),
     weeklyGoal: document.getElementById('weekly-goal-input')
 };
@@ -125,9 +127,11 @@ function init() {
         autoTransition = settings.autoTransition ?? true;
         longBreakInterval = settings.longBreakInterval ?? 4;
         focusCount = settings.focusCount ?? 0;
+        flowtimeRatio = settings.flowtimeRatio ?? 5;
     }
     inputs.autoTransition.checked = autoTransition;
     inputs.longBreakInterval.value = longBreakInterval;
+    inputs.flowtimeRatio.value = flowtimeRatio;
 
     // Set Version Display
     if (typeof APP_VERSION !== 'undefined' && typeof BUILD_TIME !== 'undefined') {
@@ -157,20 +161,27 @@ function setProgress(percent) {
 }
 
 function updateDisplay() {
-    timeDisplay.textContent = formatTime(timeLeft);
+    const displayTime = currentMode === 'flowtime' ? elapsedFlowtime : timeLeft;
+    timeDisplay.textContent = formatTime(displayTime);
+
     const modeName = currentMode === 'focus' ? 'Focus' :
-        currentMode === 'short' ? 'Short Break' : 'Long Break';
+        currentMode === 'flowtime' ? 'Flowtime Focus' :
+            currentMode === 'short' ? 'Short Break' : 'Long Break';
+
     const taskPart = currentTaskText.textContent ? `[${currentTaskText.textContent}] ` : '';
-    document.title = `${formatTime(timeLeft)} - ${taskPart}${modeName}`;
+    document.title = `${formatTime(displayTime)} - ${taskPart}${modeName}`;
 
     // Update Ring
-    const totalTime = modes[currentMode] * 60;
-    const percent = (timeLeft / totalTime) * 100;
-    // We want the ring to disappear as time goes. 
-    // If percent is 100 (full), offset should be 0.
-    // If percent is 0 (empty), offset should be circumference.
-    const offset = circumference - (percent / 100) * circumference;
-    circle.style.strokeDashoffset = offset;
+    if (currentMode === 'flowtime') {
+        // For flowtime, let's just make the ring full or a simple animation?
+        // Let's make it fill slowly or just stay full for now.
+        circle.style.strokeDashoffset = 0;
+    } else {
+        const totalTime = modes[currentMode] * 60;
+        const percent = (timeLeft / totalTime) * 100;
+        const offset = circumference - (percent / 100) * circumference;
+        circle.style.strokeDashoffset = offset;
+    }
 }
 
 function saveSettings() {
@@ -181,6 +192,7 @@ function saveSettings() {
     const newWeeklyGoal = parseFloat(inputs.weeklyGoal.value);
     const newLongBreakInterval = parseInt(inputs.longBreakInterval.value);
     const newAutoTransition = inputs.autoTransition.checked;
+    const newFlowtimeRatio = parseInt(inputs.flowtimeRatio.value);
 
     // Basic Validation
     if (newFocus > 0) modes.focus = newFocus;
@@ -189,6 +201,7 @@ function saveSettings() {
     if (newDailyGoal > 0) goals.daily = newDailyGoal;
     if (newWeeklyGoal > 0) goals.weekly = newWeeklyGoal;
     if (newLongBreakInterval > 0) longBreakInterval = newLongBreakInterval;
+    if (newFlowtimeRatio >= 2) flowtimeRatio = newFlowtimeRatio;
     autoTransition = newAutoTransition;
 
     localStorage.setItem('pomodoroModes', JSON.stringify(modes));
@@ -196,7 +209,8 @@ function saveSettings() {
     localStorage.setItem('pomodoroSessionSettings', JSON.stringify({
         autoTransition,
         longBreakInterval,
-        focusCount
+        focusCount,
+        flowtimeRatio
     }));
 
     settingsModal.classList.remove('open');
@@ -231,24 +245,27 @@ function switchMode(mode) {
         if (btn.dataset.mode === mode) btn.classList.add('active');
     });
 
-    document.body.className = mode === 'focus' ? '' : `${mode}-break`;
+    document.body.className = mode === 'focus' ? '' :
+        mode === 'flowtime' ? 'flowtime-break' : `${mode}-break`;
+
     titleDisplay.textContent = mode === 'focus' ? 'Focus' :
-        mode === 'short' ? 'Short Break' : 'Long Break';
+        mode === 'flowtime' ? 'Flowtime' :
+            mode === 'short' ? 'Short Break' : 'Long Break';
 
     resetTimer();
 }
 
 // --- History Logic ---
 
-function addToHistory(taskName) {
+function addToHistory(taskName, durationOverride = null) {
     // Check if there is actually a task name to save
-    if (!taskName) return;
+    if (!taskName) taskName = "Untitled Session";
 
     const entry = {
         id: Date.now(),
         task: taskName,
         date: new Date().toLocaleString(), // Format nicely?
-        duration: modes.focus
+        duration: durationOverride || modes.focus
     };
 
     history.unshift(entry); // Add to top
@@ -509,17 +526,26 @@ function showNotification() {
 
 function startTimer() {
     if (isRunning) {
-        pauseTimer();
+        if (currentMode === 'flowtime') {
+            stopFlowtime();
+        } else {
+            pauseTimer();
+        }
     } else {
         requestNotificationPermission();
         isRunning = true;
-        startBtn.textContent = 'Pause';
+        startBtn.textContent = currentMode === 'flowtime' ? 'Stop & Break' : 'Pause';
 
         timerId = setInterval(() => {
-            timeLeft--;
+            if (currentMode === 'flowtime') {
+                elapsedFlowtime++;
+            } else {
+                timeLeft--;
+            }
+
             updateDisplay();
 
-            if (timeLeft === 0) {
+            if (currentMode !== 'flowtime' && timeLeft === 0) {
                 clearInterval(timerId);
                 isRunning = false;
                 startBtn.textContent = 'Start';
@@ -568,6 +594,40 @@ function handleAutoTransition() {
     startTimer(); // Auto start next session
 }
 
+function stopFlowtime() {
+    if (elapsedFlowtime > 0) {
+        const breakMins = Math.max(1, Math.floor(elapsedFlowtime / 60 / flowtimeRatio));
+
+        // Create a temporary history entry or modify addToHistory to accept duration
+        const focusDurationMins = Math.ceil(elapsedFlowtime / 60);
+
+        // Add to history
+        addToHistory(currentTaskText.textContent || 'Flowtime Session', focusDurationMins);
+
+        // Switch to break
+        currentMode = 'short';
+        timeLeft = breakMins * 60;
+
+        pauseTimer(); // Stop the count-up
+
+        // Update UI state for mode
+        modeBtns.forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.dataset.mode === 'short') btn.classList.add('active');
+        });
+        document.body.className = 'short-break';
+        titleDisplay.textContent = 'Short Break';
+
+        if (autoTransition) {
+            startTimer(); // Start the calculated break
+        } else {
+            updateDisplay();
+        }
+    } else {
+        pauseTimer();
+    }
+}
+
 function pauseTimer() {
     clearInterval(timerId);
     isRunning = false;
@@ -576,6 +636,7 @@ function pauseTimer() {
 
 function resetTimer() {
     pauseTimer();
+    elapsedFlowtime = 0;
     timeLeft = modes[currentMode] * 60;
     // Reset ring to full
     circle.style.strokeDashoffset = 0;

@@ -122,7 +122,7 @@ We have a comprehensive plan to evolve this tool into a productivity powerhouse.
     - [x] Custom sequences (e.g., 50/10)
     - [x] Presets (Coding, Study, Pomodoro)
 - **14. Special Modes**
-    - [ ] **Flowtime**: Work until your focus dips naturally; take proportional breaks.
+    - [x] **Flowtime**: Work until your focus dips naturally; take proportional breaks.
     - [ ] **Breath Time**: Guided sessions for focus preparation:
         - **Micro-Reset** (1 min): 2-1-4 breathing.
         - **Standard Prep** (3 mins): 6-10 deep slow breaths/min.
