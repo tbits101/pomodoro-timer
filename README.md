@@ -87,10 +87,12 @@ We have a comprehensive plan to evolve this tool into a productivity powerhouse.
     - [x] Clear call-to-action buttons
     - [x] **Direct Timer Edit**: Click the timer text to type a custom time.
     - [ ] **Appearance**: Toggle between Light/Dark/System themes.
+    - [ ] **Dynamic Backgrounds**: Gorgeous photo slideshows or ambient videos.
 - **6. Settings (Basic)**
     - [x] Adjust work and break durations
     - [x] Enable/disable sounds toggle
     - [ ] **Focus Sounds**: Background ambient noise (Rain, Fireplace, City) - Default: OFF.
+    - [ ] **Animated Companions**: Interactive characters (e.g. Focus Cat) that work with you.
 
 ### 🟢 Intermediate Features (Quality of Life)
 - **7. Task List & Queue**
@@ -99,6 +101,7 @@ We have a comprehensive plan to evolve this tool into a productivity powerhouse.
     - [x] **Drag & Drop**: Reorder tasks easily.
     - [x] **Inline Editing**: Click any task to edit its text.
     - [x] **Promotion**: Instantly make any queued task the current active one.
+    - [ ] **Subtasks**: Break down larger tasks into smaller checkpoints.
 - **8. Auto-Start Options**
     - [ ] Auto-start next work session
     - [ ] Auto-start breaks
@@ -109,6 +112,7 @@ We have a comprehensive plan to evolve this tool into a productivity powerhouse.
     - [ ] **Custom Labels**: Tag sessions with categories or custom notes.
     - [x] **Total focused time calculation** (Daily & Weekly summaries)
     - [x] Daily/Weekly goal tracking
+    - [ ] **Advanced Reports**: Monthly and Yearly time distribution analytics.
 - **10. Pause & Resume Tracking**
     - [ ] Track interruptions and paused time
 - **11. Cross-Platform Sync**
@@ -133,12 +137,14 @@ We have a comprehensive plan to evolve this tool into a productivity powerhouse.
 - **15. Smart Recommendations**
     - [ ] Adaptive lengths based on performance
 - **16. Gamification**
-    - [ ] XP, Levels, Badges
-    - [ ] Streaks
+    - [ ] **Virtual Growth**: A plant or character that grows with your focus sessions and withers if you reset too often.
+    - [ ] **XP, Levels, Badges**: Level up your productivity profile.
+    - [ ] **Streaks**: Maintain daily consistency.
 - **17. Collaboration**
-    - [ ] Virtual co-working rooms
+    - [ ] **Virtual Body Doubling**: Join "silent focus rooms" (simulated or real-time) to work alongside others.
+    - [ ] **Virtual co-working rooms**
 - **18. Integrations**
-    - [ ] Calendar & Task Manager sync
+    - [ ] **Calendar & Task Manager sync**: Integration with Google Calendar, Trello, and Asana.
 - **19. Offline & Reliability**
     - [x] Full offline mode support
     - [ ] Battery-efficient background workers
