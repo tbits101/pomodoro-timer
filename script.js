@@ -116,6 +116,7 @@ const goalTextWeek = document.getElementById('goal-text-week');
 // Breathing Elements
 const breathOptions = document.getElementById('breath-options');
 const breathInstruction = document.getElementById('breath-instruction');
+const phaseCountdown = document.getElementById('phase-countdown');
 const breathSessionBtns = document.querySelectorAll('.breath-session-btn');
 
 // --- Initialization ---
@@ -204,7 +205,10 @@ function formatTime(seconds) {
 }
 
 function setProgress(percent, el = circle, circ = circumference) {
-    const offset = circ - (percent / 100) * circ;
+    // If element is provided, we should probably check its actual circumference 
+    // in case of responsive changes.
+    const currentCirc = el.getTotalLength ? el.getTotalLength() : circ;
+    const offset = currentCirc - (percent / 100) * currentCirc;
     el.style.strokeDashoffset = offset;
 }
 
@@ -655,6 +659,7 @@ function startTimer() {
                 // Special handling for Breath mode completion
                 if (currentMode === 'breath') {
                     breathInstruction.textContent = 'Finished';
+                    if (phaseCountdown) phaseCountdown.textContent = '';
                     breathInstruction.classList.remove('pulse');
                     circle.classList.remove('breathing-ring');
                     setTimeout(() => {
@@ -759,7 +764,10 @@ function resetTimer() {
 
     // Reset ring to full
     circle.style.strokeDashoffset = 0;
-    if (phaseCircle) phaseCircle.style.strokeDashoffset = phaseCircumference;
+    if (phaseCircle) phaseCircle.style.strokeDashoffset = phaseCircle.getTotalLength ? phaseCircle.getTotalLength() : phaseCircumference;
+    if (phaseCountdown) {
+        phaseCountdown.textContent = '';
+    }
     updateDisplay();
 }
 
@@ -778,9 +786,12 @@ function handleBreathingTick() {
     // Re-calculating after potential index change
     currentPhase = session.phases[breathPhaseIndex];
 
-    // Update instruction text
+    // Update instruction and countdown
     breathInstruction.textContent = currentPhase.type;
     breathInstruction.classList.remove('hidden');
+
+    const remainingInPhase = currentPhase.duration - breathTimeInPhase;
+    phaseCountdown.textContent = remainingInPhase;
 
     // Update inner progress ring to reflect breath phase (inhale/hold/exhale)
     const phasePercent = (breathTimeInPhase / currentPhase.duration) * 100;

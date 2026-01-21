@@ -442,6 +442,25 @@ body.flowtime-break .mode-btn.active {
         cx: 130;
         cy: 130;
     }
+
+    .phase-ring__circle {
+        r: 95;
+        cx: 130;
+        cy: 130;
+    }
+
+    .mode-switcher {
+        gap: 0.2rem;
+        padding: 0.3rem;
+        width: 100%;
+        box-sizing: border-box;
+        justify-content: space-evenly;
+    }
+
+    .mode-btn {
+        padding: 0.4rem 0.6rem;
+        font-size: 0.75rem;
+    }
 }
 
 /* Mode Switcher */
@@ -1223,10 +1242,26 @@ body.breath-mode .breath-instruction {
 }
 
 body.breath-mode .timer-display {
-    top: 55%;
-    /* Move down slightly */
-    font-size: 3.5rem;
+    top: 58%;
+    /* Move down slightly more */
+    font-size: 3rem;
     /* Slightly smaller for balance */
     position: absolute;
     width: 100%;
+}
+.phase-countdown {
+    position: absolute;
+    top: 45%;
+    width: 100%;
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: 600;
+    opacity: 0.8;
+    z-index: 3;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+body.breath-mode .phase-countdown {
+    display: block;
 }
