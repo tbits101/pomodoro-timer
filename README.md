@@ -150,6 +150,7 @@ We have a comprehensive plan to evolve this tool into a productivity powerhouse.
 - `index.html`: Main structure.
 - `style.css`: All styles and animations.
 - `script.js`: Timer logic and notification handling.
+- `favicon.png`: Browser tab icon.
 
 ## Project Standards & Automation
 This repository uses `just` to enforce standards.
