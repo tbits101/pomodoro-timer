@@ -89,66 +89,83 @@
     <!-- Settings Modal -->
     <div id="settings-modal" class="modal">
         <div class="modal-content glass-card">
-            <h2>Settings</h2>
-            <div class="setting-group">
-                <label>Focus (minutes)</label>
-                <input type="number" id="focus-time-input" value="25" min="1" max="60">
+            <div class="modal-header">
+                <h2>Settings</h2>
             </div>
-            <div class="setting-group">
-                <label>Short Break (minutes)</label>
-                <input type="number" id="short-time-input" value="5" min="1" max="30">
-            </div>
-            <div class="setting-group">
-                <label>Long Break (minutes)</label>
-                <input type="number" id="long-time-input" value="15" min="1" max="60">
-            </div>
-            <div class="setting-group">
-                <label>Long Break Interval</label>
-                <input type="number" id="long-break-interval-input" value="4" min="1" max="10">
-            </div>
-            <div class="setting-group">
-                <label>Flowtime Break Ratio</label>
-                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                    <span>1 /</span>
-                    <input type="number" id="flowtime-ratio-input" value="5" min="2" max="10" style="flex: 1;">
+            <div class="modal-body">
+                <div class="section-title">Timer Durations</div>
+                <div class="setting-group">
+                    <label>Session Preset</label>
+                    <select id="preset-select" class="select-input">
+                        <option value="custom">Custom</option>
+                        <option value="pomodoro">Classic Pomodoro (25/5/15)</option>
+                        <option value="coding">Deep Work / Coding (50/10/30)</option>
+                        <option value="study">Study Session (45/15/30)</option>
+                    </select>
                 </div>
-                <small style="opacity: 0.5; font-size: 0.7rem; margin-top: 0.2rem; display: block;">e.g., 5 means 1 min
-                    break for every 5 mins work</small>
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+                    <div class="setting-group">
+                        <label>Focus</label>
+                        <input type="number" id="focus-time-input" value="25" min="1" max="60">
+                    </div>
+                    <div class="setting-group">
+                        <label>Short</label>
+                        <input type="number" id="short-time-input" value="5" min="1" max="30">
+                    </div>
+                    <div class="setting-group">
+                        <label>Long</label>
+                        <input type="number" id="long-time-input" value="15" min="1" max="60">
+                    </div>
+                </div>
+
+                <div class="section-title">Behavior & Flow</div>
+                <div class="setting-group">
+                    <label>Long Break Interval</label>
+                    <input type="number" id="long-break-interval-input" value="4" min="1" max="10">
+                </div>
+                <div class="setting-group">
+                    <label>Flowtime Break Ratio</label>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span>1 /</span>
+                        <input type="number" id="flowtime-ratio-input" value="5" min="2" max="10" style="flex: 1;">
+                    </div>
+                    <small style="opacity: 0.5; font-size: 0.7rem; margin-top: 0.2rem; display: block;">e.g., 5 means 1
+                        min break for every 5 mins work</small>
+                </div>
+
+                <div class="section-title">Goals</div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="setting-group">
+                        <label>Daily Goal (h)</label>
+                        <input type="number" id="daily-goal-input" value="4" min="1" max="24">
+                    </div>
+                    <div class="setting-group">
+                        <label>Weekly Goal (h)</label>
+                        <input type="number" id="weekly-goal-input" value="20" min="1" max="168">
+                    </div>
+                </div>
+
+                <div class="section-title">Notifications</div>
+                <div class="setting-group toggle-group">
+                    <label for="auto-transition-toggle">Auto Transition</label>
+                    <label class="switch">
+                        <input type="checkbox" id="auto-transition-toggle" checked>
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+                <div class="setting-group toggle-group">
+                    <label for="sound-toggle">Enable Sound</label>
+                    <label class="switch">
+                        <input type="checkbox" id="sound-toggle" checked>
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+                <div id="app-version" style="text-align: center; margin-top: 1rem; opacity: 0.5; font-size: 0.7rem;">
+                </div>
             </div>
-            <div class="setting-group">
-                <label>Session Preset</label>
-                <select id="preset-select" class="select-input">
-                    <option value="custom">Custom</option>
-                    <option value="pomodoro">Classic Pomodoro (25/5/15)</option>
-                    <option value="coding">Deep Work / Coding (50/10/30)</option>
-                    <option value="study">Study Session (45/15/30)</option>
-                </select>
+            <div class="modal-footer">
+                <button id="close-modal-btn" class="btn primary" style="width: 100%;">Save & Close</button>
             </div>
-            <div class="setting-group">
-                <label>Daily Goal (hours)</label>
-                <input type="number" id="daily-goal-input" value="4" min="1" max="24">
-            </div>
-            <div class="setting-group">
-                <label>Weekly Goal (hours)</label>
-                <input type="number" id="weekly-goal-input" value="20" min="1" max="168">
-            </div>
-            <div class="setting-group toggle-group">
-                <label for="auto-transition-toggle">Auto Transition Sessions</label>
-                <label class="switch">
-                    <input type="checkbox" id="auto-transition-toggle" checked>
-                    <span class="slider round"></span>
-                </label>
-            </div>
-            <div class="setting-group toggle-group">
-                <label for="sound-toggle">Enable Sound</label>
-                <label class="switch">
-                    <input type="checkbox" id="sound-toggle" checked>
-                    <span class="slider round"></span>
-                </label>
-            </div>
-            <div id="app-version" style="text-align: center; margin-top: 1.5rem; opacity: 0.5; font-size: 0.8rem;">
-            </div>
-            <button id="close-modal-btn" class="btn primary">Save & Close</button>
         </div>
     </div>
 

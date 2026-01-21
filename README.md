@@ -86,6 +86,7 @@ We have a comprehensive plan to evolve this tool into a productivity powerhouse.
     - [x] Current mode display
     - [x] Clear call-to-action buttons
     - [x] **Direct Timer Edit**: Click the timer text to type a custom time.
+    - [x] **Settings Reorganization**: Logical groupings and scrollable container.
     - [ ] **Appearance**: Toggle between Light/Dark/System themes.
     - [ ] **Dynamic Backgrounds**: Gorgeous photo slideshows or ambient videos.
 - **6. Settings (Basic)**
