@@ -23,6 +23,7 @@ let longBreakInterval = 4;
 let focusCount = 0; // Cumulative focus sessions in one loop
 let flowtimeRatio = 5;
 let elapsedFlowtime = 0; // Track seconds in Flowtime
+let theme = 'system';
 
 // DOM Elements
 const timeDisplay = document.getElementById('time-display');
@@ -67,7 +68,8 @@ const inputs = {
     preset: document.getElementById('preset-select'),
     flowtimeRatio: document.getElementById('flowtime-ratio-input'),
     dailyGoal: document.getElementById('daily-goal-input'),
-    weeklyGoal: document.getElementById('weekly-goal-input')
+    weeklyGoal: document.getElementById('weekly-goal-input'),
+    theme: document.getElementById('theme-select')
 };
 
 // Goal Display Elements
@@ -133,9 +135,17 @@ function init() {
     inputs.longBreakInterval.value = longBreakInterval;
     inputs.flowtimeRatio.value = flowtimeRatio;
 
+    const savedTheme = localStorage.getItem('pomodoroTheme');
+    if (savedTheme) {
+        theme = savedTheme;
+    }
+    inputs.theme.value = theme;
+    applyTheme(theme);
+
     // Set Version Display
     if (typeof APP_VERSION !== 'undefined' && typeof BUILD_TIME !== 'undefined') {
-        document.getElementById('app-version').textContent = `v${APP_VERSION} (Build ${BUILD_TIME})`;
+        const versionEl = document.getElementById('app-version');
+        if (versionEl) versionEl.textContent = `v${APP_VERSION} (Build ${BUILD_TIME})`;
     }
 
     // Set initial timer
@@ -193,6 +203,7 @@ function saveSettings() {
     const newLongBreakInterval = parseInt(inputs.longBreakInterval.value);
     const newAutoTransition = inputs.autoTransition.checked;
     const newFlowtimeRatio = parseInt(inputs.flowtimeRatio.value);
+    const newTheme = inputs.theme.value;
 
     // Basic Validation
     if (newFocus > 0) modes.focus = newFocus;
@@ -212,6 +223,9 @@ function saveSettings() {
         focusCount,
         flowtimeRatio
     }));
+    localStorage.setItem('pomodoroTheme', theme);
+
+    applyTheme(theme);
 
     settingsModal.classList.remove('open');
     calculateHistoryStats(); // Refresh stats/goals
@@ -245,8 +259,13 @@ function switchMode(mode) {
         if (btn.dataset.mode === mode) btn.classList.add('active');
     });
 
-    document.body.className = mode === 'focus' ? '' :
-        mode === 'flowtime' ? 'flowtime-break' : `${mode}-break`;
+    // Manage mode classes without overwriting theme classes
+    document.body.classList.remove('focus-mode', 'short-break-break', 'long-break-break', 'flowtime-break');
+    if (mode === 'flowtime') {
+        document.body.classList.add('flowtime-break');
+    } else if (mode !== 'focus') {
+        document.body.classList.add(`${mode}-break`);
+    }
 
     titleDisplay.textContent = mode === 'focus' ? 'Focus' :
         mode === 'flowtime' ? 'Flowtime' :
@@ -254,6 +273,30 @@ function switchMode(mode) {
 
     resetTimer();
 }
+
+function applyTheme(themeValue) {
+    document.body.classList.remove('light-theme', 'dark-theme');
+
+    if (themeValue === 'light') {
+        document.body.classList.add('light-theme');
+    } else if (themeValue === 'dark') {
+        document.body.classList.add('dark-theme');
+    } else if (themeValue === 'system') {
+        const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (isDark) {
+            document.body.classList.add('dark-theme');
+        } else {
+            document.body.classList.add('light-theme');
+        }
+    }
+}
+
+// System theme change listener
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+    if (theme === 'system') {
+        applyTheme('system');
+    }
+});
 
 // --- History Logic ---
 

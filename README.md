@@ -89,7 +89,7 @@ We have a comprehensive plan to evolve this tool into a productivity powerhouse.
     - [x] **Settings Reorganization**: Logical groupings and scrollable container.
     - [x] **Early Task Completion**: Records actual elapsed time in history.
     - [x] **Active Task Editing**: Edit the current task text in-place.
-    - [ ] **Appearance**: Toggle between Light/Dark/System themes.
+    - [x] **Appearance**: Toggle between Light/Dark/System themes.
     - [ ] **Dynamic Backgrounds**: Gorgeous photo slideshows or ambient videos.
 - **6. Settings (Basic)**
     - [x] Adjust work and break durations
