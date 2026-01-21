@@ -130,10 +130,10 @@ We have a comprehensive plan to evolve this tool into a productivity powerhouse.
     - [x] Presets (Coding, Study, Pomodoro)
 - **14. Special Modes**
     - [x] **Flowtime**: Work until your focus dips naturally; take proportional breaks.
-    - [ ] **Breath Time**: Guided sessions for focus preparation:
-        - **Micro-Reset** (1 min): 2-1-4 breathing.
-        - **Standard Prep** (3 mins): 6-10 deep slow breaths/min.
-        - **Deep Transition** (5 mins): Full mental clearance.
+    - [x] **Breath Time**: Guided sessions for focus preparation:
+    - [x] **Micro-Reset** (1 min): 2-1-4 breathing.
+    - [x] **Standard Prep** (3 mins): 6-10 deep slow breaths/min.
+    - [x] **Deep Transition** (5 mins): Full mental clearance.
 - **15. Distraction Management**
     - [ ] Website blocking integration
     - [ ] "Do Not Disturb" integration
