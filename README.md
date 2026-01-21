@@ -86,9 +86,11 @@ We have a comprehensive plan to evolve this tool into a productivity powerhouse.
     - [x] Current mode display
     - [x] Clear call-to-action buttons
     - [x] **Direct Timer Edit**: Click the timer text to type a custom time.
+    - [ ] **Appearance**: Toggle between Light/Dark/System themes.
 - **6. Settings (Basic)**
     - [x] Adjust work and break durations
     - [x] Enable/disable sounds toggle
+    - [ ] **Focus Sounds**: Background ambient noise (Rain, Fireplace, City) - Default: OFF.
 
 ### 🟢 Intermediate Features (Quality of Life)
 - **7. Task List & Queue**
@@ -104,6 +106,7 @@ We have a comprehensive plan to evolve this tool into a productivity powerhouse.
     - [x] History log of sessions
     - [x] **Delete Items**: Remove specific sessions from history.
     - [x] **Inline Editing**: Modify entry titles and durations directly in the log.
+    - [ ] **Custom Labels**: Tag sessions with categories or custom notes.
     - [x] **Total focused time calculation** (Daily & Weekly summaries)
     - [x] Daily/Weekly goal tracking
 - **10. Pause & Resume Tracking**
@@ -118,7 +121,13 @@ We have a comprehensive plan to evolve this tool into a productivity powerhouse.
 - **13. Custom Workflows**
     - [x] Custom sequences (e.g., 50/10)
     - [x] Presets (Coding, Study, Pomodoro)
-- **14. Distraction Management**
+- **14. Special Modes**
+    - [ ] **Flowtime**: Work until your focus dips naturally; take proportional breaks.
+    - [ ] **Breath Time**: Guided sessions for focus preparation:
+        - **Micro-Reset** (1 min): 2-1-4 breathing.
+        - **Standard Prep** (3 mins): 6-10 deep slow breaths/min.
+        - **Deep Transition** (5 mins): Full mental clearance.
+- **15. Distraction Management**
     - [ ] Website blocking integration
     - [ ] "Do Not Disturb" integration
 - **15. Smart Recommendations**
