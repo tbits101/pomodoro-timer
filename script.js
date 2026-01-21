@@ -12,12 +12,16 @@ let timeLeft = modes[currentMode] * 60;
 let timerId = null;
 let isRunning = false;
 
-// Goals State (hours)
 const DEFAULT_GOALS = {
     daily: 4,
     weekly: 20
 };
 let goals = { ...DEFAULT_GOALS };
+
+// Session Flow State
+let autoTransition = true;
+let longBreakInterval = 4;
+let focusCount = 0; // Cumulative focus sessions in one loop
 
 // DOM Elements
 const timeDisplay = document.getElementById('time-display');
@@ -57,6 +61,9 @@ const inputs = {
     focus: document.getElementById('focus-time-input'),
     short: document.getElementById('short-time-input'),
     long: document.getElementById('long-time-input'),
+    longBreakInterval: document.getElementById('long-break-interval-input'),
+    autoTransition: document.getElementById('auto-transition-toggle'),
+    preset: document.getElementById('preset-select'),
     dailyGoal: document.getElementById('daily-goal-input'),
     weeklyGoal: document.getElementById('weekly-goal-input')
 };
@@ -105,12 +112,22 @@ function init() {
         goals = JSON.parse(savedGoals);
     }
 
-    // Set initial custom values in inputs
     inputs.focus.value = modes.focus;
     inputs.short.value = modes.short;
     inputs.long.value = modes.long;
     inputs.dailyGoal.value = goals.daily;
     inputs.weeklyGoal.value = goals.weekly;
+
+    // Load Session Settings
+    const savedSessionSettings = localStorage.getItem('pomodoroSessionSettings');
+    if (savedSessionSettings) {
+        const settings = JSON.parse(savedSessionSettings);
+        autoTransition = settings.autoTransition ?? true;
+        longBreakInterval = settings.longBreakInterval ?? 4;
+        focusCount = settings.focusCount ?? 0;
+    }
+    inputs.autoTransition.checked = autoTransition;
+    inputs.longBreakInterval.value = longBreakInterval;
 
     // Set Version Display
     if (typeof APP_VERSION !== 'undefined' && typeof BUILD_TIME !== 'undefined') {
@@ -162,6 +179,8 @@ function saveSettings() {
     const newLong = parseInt(inputs.long.value);
     const newDailyGoal = parseFloat(inputs.dailyGoal.value);
     const newWeeklyGoal = parseFloat(inputs.weeklyGoal.value);
+    const newLongBreakInterval = parseInt(inputs.longBreakInterval.value);
+    const newAutoTransition = inputs.autoTransition.checked;
 
     // Basic Validation
     if (newFocus > 0) modes.focus = newFocus;
@@ -169,14 +188,38 @@ function saveSettings() {
     if (newLong > 0) modes.long = newLong;
     if (newDailyGoal > 0) goals.daily = newDailyGoal;
     if (newWeeklyGoal > 0) goals.weekly = newWeeklyGoal;
+    if (newLongBreakInterval > 0) longBreakInterval = newLongBreakInterval;
+    autoTransition = newAutoTransition;
 
     localStorage.setItem('pomodoroModes', JSON.stringify(modes));
     localStorage.setItem('pomodoroGoals', JSON.stringify(goals));
+    localStorage.setItem('pomodoroSessionSettings', JSON.stringify({
+        autoTransition,
+        longBreakInterval,
+        focusCount
+    }));
 
     settingsModal.classList.remove('open');
     calculateHistoryStats(); // Refresh stats/goals
     if (!isRunning) {
         resetTimer();
+    }
+}
+
+function applyPreset(presetName) {
+    if (presetName === 'custom') return;
+
+    const PRESETS = {
+        pomodoro: { focus: 25, short: 5, long: 15 },
+        coding: { focus: 50, short: 10, long: 30 },
+        study: { focus: 45, short: 15, long: 30 }
+    };
+
+    const config = PRESETS[presetName];
+    if (config) {
+        inputs.focus.value = config.focus;
+        inputs.short.value = config.short;
+        inputs.long.value = config.long;
     }
 }
 
@@ -490,10 +533,39 @@ function startTimer() {
                 // Add to history if Focus
                 if (currentMode === 'focus') {
                     addToHistory(currentTaskText.textContent);
+                    focusCount++;
+                    localStorage.setItem('pomodoroSessionSettings', JSON.stringify({
+                        autoTransition,
+                        longBreakInterval,
+                        focusCount
+                    }));
+                }
+
+                if (autoTransition) {
+                    handleAutoTransition();
                 }
             }
         }, 1000);
     }
+}
+
+function handleAutoTransition() {
+    let nextMode = 'focus';
+
+    if (currentMode === 'focus') {
+        if (focusCount >= longBreakInterval) {
+            nextMode = 'long';
+            focusCount = 0; // Reset after long break
+        } else {
+            nextMode = 'short';
+        }
+    } else {
+        // From any break, back to focus
+        nextMode = 'focus';
+    }
+
+    switchMode(nextMode);
+    startTimer(); // Auto start next session
 }
 
 function pauseTimer() {
@@ -817,6 +889,11 @@ function loadSettings() {
 settingsBtn.addEventListener('click', () => {
     settingsModal.classList.add('open');
     soundToggle.checked = soundEnabled; // Ensure UI matches state
+    inputs.preset.value = 'custom'; // Reset preset select to custom when opening
+});
+
+inputs.preset.addEventListener('change', (e) => {
+    applyPreset(e.target.value);
 });
 
 closeModalBtn.addEventListener('click', () => {

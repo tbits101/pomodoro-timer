@@ -12,6 +12,8 @@ A beautiful, glassmorphism-styled Pomodoro timer built with vanilla HTML, CSS, a
 - **History Log**: Tracks your completed sessions; now with **Inline Editing** for titles, durations, and dates. Includes daily and weekly (Monday-start) summaries with ultra-robust date tracking and automated PWA update notifications.
 - **Glassmorphism Design**: Modern UI with animated gradient backgrounds.
 - **Theming**: Color schemes change based on the active mode.
+- **Session Flow**: Automatic transitions between Work, Short Break, and Long Break configurations (v1.9+).
+- **Presets**: Quick-select modes for Coding and Study sessions with optimized timings.
 - **Audio & Visual Alerts**: Plays a sound and sends a browser notification when the timer ends.
 - **PWA Support**: Installable on Android/iOS/Desktop with offline support.
 - **Responsive**: Works on desktop and mobile.
@@ -71,7 +73,8 @@ We have a comprehensive plan to evolve this tool into a productivity powerhouse.
     - [x] 15–30 minute long break
     - [x] Start / Pause / Reset controls
 - **2. Session Flow**
-    - [ ] Automatic transition (Work → Break → Work)
+    - [x] Automatic transition (Work → Break → Work)
+    - [x] Long Break Interval (configurable)
     - [ ] Manual skip option
 - **3. Notifications & Alerts**
     - [x] Sound when session ends
@@ -102,7 +105,7 @@ We have a comprehensive plan to evolve this tool into a productivity powerhouse.
     - [x] **Delete Items**: Remove specific sessions from history.
     - [x] **Inline Editing**: Modify entry titles and durations directly in the log.
     - [x] **Total focused time calculation** (Daily & Weekly summaries)
-    - [ ] Daily/Weekly goal tracking
+    - [x] Daily/Weekly goal tracking
 - **10. Pause & Resume Tracking**
     - [ ] Track interruptions and paused time
 - **11. Cross-Platform Sync**
@@ -113,8 +116,8 @@ We have a comprehensive plan to evolve this tool into a productivity powerhouse.
     - [ ] Focus trends over time
     - [ ] Productivity by time of day
 - **13. Custom Workflows**
-    - [ ] Custom sequences (e.g., 50/10)
-    - [ ] Presets (Coding, Study, Writing)
+    - [x] Custom sequences (e.g., 50/10)
+    - [x] Presets (Coding, Study, Pomodoro)
 - **14. Distraction Management**
     - [ ] Website blocking integration
     - [ ] "Do Not Disturb" integration
