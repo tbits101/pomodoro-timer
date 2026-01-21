@@ -1112,3 +1112,121 @@ input:checked+.slider:before {
         opacity: 1;
     }
 }
+
+/* Breath Mode Styles */
+body.breath-mode {
+    --bg-gradient-1: #6a11cb;
+    --bg-gradient-2: #2575fc;
+}
+
+body.breath-mode .primary {
+    color: #6a11cb;
+}
+
+body.light-theme.breath-mode .primary {
+    background: #6a11cb;
+    color: white;
+}
+
+body.breath-mode .mode-btn.active {
+    color: #6a11cb;
+}
+
+.breath-options {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+    animation: fadeIn 0.3s ease;
+}
+
+.breath-session-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--glass-border);
+    padding: 0.5rem 1rem;
+    border-radius: 12px;
+    color: white;
+    font-family: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.8rem;
+}
+
+.breath-session-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-1px);
+}
+
+.breath-session-btn.active {
+    background: white;
+    color: #6a11cb;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.breath-instruction {
+    font-size: 1.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    position: absolute;
+    top: 35%;
+    width: 100%;
+    text-align: center;
+    z-index: 3;
+    pointer-events: none;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.breath-instruction.pulse {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 0.7;
+    }
+
+    50% {
+        transform: scale(1.1);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 0.7;
+    }
+}
+
+/* Breathing transition for the ring */
+.breathing-ring .progress-ring__circle {
+    transition: stroke-dashoffset 1s linear;
+}
+
+.phase-ring__circle {
+    transition: stroke-dashoffset 0.5s linear, opacity 0.3s ease;
+    opacity: 0;
+    pointer-events: none;
+}
+
+body.breath-mode .phase-ring__circle {
+    opacity: 1;
+}
+
+body.breath-mode .breath-instruction {
+    top: 30%;
+    /* Move up slightly */
+    font-size: 1.5rem;
+    /* Slightly smaller to fit better */
+}
+
+body.breath-mode .timer-display {
+    top: 55%;
+    /* Move down slightly */
+    font-size: 3.5rem;
+    /* Slightly smaller for balance */
+    position: absolute;
+    width: 100%;
+}

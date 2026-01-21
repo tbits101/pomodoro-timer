@@ -25,6 +25,37 @@ let flowtimeRatio = 5;
 let elapsedFlowtime = 0; // Track seconds in Flowtime
 let theme = 'system';
 
+// Breathing State
+const BREATH_SESSIONS = {
+    micro: {
+        duration: 1,
+        phases: [
+            { type: 'Inhale', duration: 2 },
+            { type: 'Hold', duration: 1 },
+            { type: 'Exhale', duration: 4 }
+        ]
+    },
+    standard: {
+        duration: 3,
+        phases: [
+            { type: 'Inhale', duration: 5 },
+            { type: 'Exhale', duration: 5 }
+        ]
+    },
+    deep: {
+        duration: 5,
+        phases: [
+            { type: 'Inhale', duration: 6 },
+            { type: 'Hold', duration: 4 },
+            { type: 'Exhale', duration: 6 }
+        ]
+    }
+};
+
+let currentBreathSession = 'micro';
+let breathPhaseIndex = 0;
+let breathTimeInPhase = 0;
+
 // DOM Elements
 const timeDisplay = document.getElementById('time-display');
 const startBtn = document.getElementById('start-btn');
@@ -35,8 +66,12 @@ const titleDisplay = document.querySelector('.title');
 
 // Progress Ring Elements
 const circle = document.querySelector('.progress-ring__circle');
+const phaseCircle = document.querySelector('.phase-ring__circle');
 const radius = circle.r.baseVal.value;
 const circumference = radius * 2 * Math.PI;
+
+const phaseRadius = phaseCircle.r.baseVal.value;
+const phaseCircumference = phaseRadius * 2 * Math.PI;
 
 // Task Elements
 const taskInput = document.getElementById('task-input');
@@ -78,6 +113,11 @@ const goalProgressWeek = document.getElementById('goal-progress-week');
 const goalTextToday = document.getElementById('goal-text-today');
 const goalTextWeek = document.getElementById('goal-text-week');
 
+// Breathing Elements
+const breathOptions = document.getElementById('breath-options');
+const breathInstruction = document.getElementById('breath-instruction');
+const breathSessionBtns = document.querySelectorAll('.breath-session-btn');
+
 // --- Initialization ---
 
 function init() {
@@ -96,6 +136,9 @@ function init() {
 
     circle.style.strokeDasharray = `${circumference} ${circumference}`;
     circle.style.strokeDashoffset = circumference;
+
+    phaseCircle.style.strokeDasharray = `${phaseCircumference} ${phaseCircumference}`;
+    phaseCircle.style.strokeDashoffset = phaseCircumference;
 
     // Load config from localStorage
     const savedModes = localStorage.getItem('pomodoroModes');
@@ -160,14 +203,9 @@ function formatTime(seconds) {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 }
 
-function setProgress(percent) {
-    // 0% = empty, 100% = full
-    // But we are counting DOWN. 
-    // Start: Full circle (offset 0). End: Empty (offset circumference)
-    // Or other way? Let's make it deplete.
-    // Full = 0 offset. Empty = circumference.
-    const offset = circumference - (percent / 100) * circumference;
-    circle.style.strokeDashoffset = offset;
+function setProgress(percent, el = circle, circ = circumference) {
+    const offset = circ - (percent / 100) * circ;
+    el.style.strokeDashoffset = offset;
 }
 
 function updateDisplay() {
@@ -176,21 +214,23 @@ function updateDisplay() {
 
     const modeName = currentMode === 'focus' ? 'Focus' :
         currentMode === 'flowtime' ? 'Flowtime Focus' :
-            currentMode === 'short' ? 'Short Break' : 'Long Break';
+            currentMode === 'breath' ? 'Breath' :
+                currentMode === 'short' ? 'Short Break' : 'Long Break';
 
     const taskPart = currentTaskText.textContent ? `[${currentTaskText.textContent}] ` : '';
     document.title = `${formatTime(displayTime)} - ${taskPart}${modeName}`;
 
     // Update Ring
     if (currentMode === 'flowtime') {
-        // For flowtime, let's just make the ring full or a simple animation?
-        // Let's make it fill slowly or just stay full for now.
         circle.style.strokeDashoffset = 0;
+    } else if (currentMode === 'breath') {
+        const totalTime = BREATH_SESSIONS[currentBreathSession].duration * 60;
+        const percent = (timeLeft / totalTime) * 100;
+        setProgress(percent, circle, circumference);
     } else {
         const totalTime = modes[currentMode] * 60;
         const percent = (timeLeft / totalTime) * 100;
-        const offset = circumference - (percent / 100) * circumference;
-        circle.style.strokeDashoffset = offset;
+        setProgress(percent, circle, circumference);
     }
 }
 
@@ -260,16 +300,27 @@ function switchMode(mode) {
     });
 
     // Manage mode classes without overwriting theme classes
-    document.body.classList.remove('focus-mode', 'short-break-break', 'long-break-break', 'flowtime-break');
+    document.body.classList.remove('focus-mode', 'short-break-break', 'long-break-break', 'flowtime-break', 'breath-mode');
+
+    // Hide breath options by default
+    breathOptions.classList.add('hidden');
+    breathInstruction.classList.add('hidden');
+    circle.classList.remove('breathing-ring');
+
     if (mode === 'flowtime') {
         document.body.classList.add('flowtime-break');
+    } else if (mode === 'breath') {
+        document.body.classList.add('breath-mode');
+        breathOptions.classList.remove('hidden');
+        timeLeft = BREATH_SESSIONS[currentBreathSession].duration * 60;
     } else if (mode !== 'focus') {
         document.body.classList.add(`${mode}-break`);
     }
 
     titleDisplay.textContent = mode === 'focus' ? 'Focus' :
         mode === 'flowtime' ? 'Flowtime' :
-            mode === 'short' ? 'Short Break' : 'Long Break';
+            mode === 'breath' ? 'Breath' :
+                mode === 'short' ? 'Short Break' : 'Long Break';
 
     resetTimer();
 }
@@ -582,13 +633,15 @@ function startTimer() {
         timerId = setInterval(() => {
             if (currentMode === 'flowtime') {
                 elapsedFlowtime++;
+            } else if (currentMode === 'breath') {
+                handleBreathingTick();
             } else {
                 timeLeft--;
             }
 
             updateDisplay();
 
-            if (currentMode !== 'flowtime' && timeLeft === 0) {
+            if (currentMode !== 'flowtime' && timeLeft <= 0) {
                 clearInterval(timerId);
                 isRunning = false;
                 startBtn.textContent = 'Start';
@@ -598,6 +651,17 @@ function startTimer() {
                 }
 
                 showNotification();
+
+                // Special handling for Breath mode completion
+                if (currentMode === 'breath') {
+                    breathInstruction.textContent = 'Finished';
+                    breathInstruction.classList.remove('pulse');
+                    circle.classList.remove('breathing-ring');
+                    setTimeout(() => {
+                        switchMode('focus');
+                    }, 2000);
+                    return;
+                }
 
                 // Add to history if Focus
                 if (currentMode === 'focus') {
@@ -680,10 +744,54 @@ function pauseTimer() {
 function resetTimer() {
     pauseTimer();
     elapsedFlowtime = 0;
-    timeLeft = modes[currentMode] * 60;
+    timeLeft = currentMode === 'breath'
+        ? BREATH_SESSIONS[currentBreathSession].duration * 60
+        : modes[currentMode] * 60;
+
+    // Reset breathing state
+    breathPhaseIndex = 0;
+    breathTimeInPhase = 0;
+    if (breathInstruction) {
+        breathInstruction.textContent = 'Ready?';
+        breathInstruction.classList.remove('pulse');
+    }
+    circle.classList.remove('breathing-ring');
+
     // Reset ring to full
     circle.style.strokeDashoffset = 0;
+    if (phaseCircle) phaseCircle.style.strokeDashoffset = phaseCircumference;
     updateDisplay();
+}
+
+function handleBreathingTick() {
+    timeLeft--;
+    breathTimeInPhase++;
+
+    const session = BREATH_SESSIONS[currentBreathSession];
+    let currentPhase = session.phases[breathPhaseIndex];
+
+    if (breathTimeInPhase >= currentPhase.duration) {
+        breathPhaseIndex = (breathPhaseIndex + 1) % session.phases.length;
+        breathTimeInPhase = 0;
+        currentPhase = session.phases[breathPhaseIndex]; // Fixed bug below
+    }
+    // Re-calculating after potential index change
+    currentPhase = session.phases[breathPhaseIndex];
+
+    // Update instruction text
+    breathInstruction.textContent = currentPhase.type;
+    breathInstruction.classList.remove('hidden');
+
+    // Update inner progress ring to reflect breath phase (inhale/hold/exhale)
+    const phasePercent = (breathTimeInPhase / currentPhase.duration) * 100;
+
+    if (currentPhase.type === 'Inhale') {
+        setProgress(phasePercent, phaseCircle, phaseCircumference); // Expanding
+    } else if (currentPhase.type === 'Exhale') {
+        setProgress(100 - phasePercent, phaseCircle, phaseCircumference); // Contracting
+    } else if (currentPhase.type === 'Hold') {
+        setProgress(100, phaseCircle, phaseCircumference); // Stay full during hold
+    }
 }
 
 // --- Edit Timer Logic ---
@@ -1019,6 +1127,16 @@ resetBtn.addEventListener('click', resetTimer);
 modeBtns.forEach(btn => {
     btn.addEventListener('click', () => {
         switchMode(btn.dataset.mode);
+    });
+});
+
+// Breathing Session Selection
+breathSessionBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+        currentBreathSession = btn.dataset.session;
+        breathSessionBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        resetTimer();
     });
 });
 

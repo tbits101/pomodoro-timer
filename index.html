@@ -23,8 +23,15 @@
             <div class="mode-switcher">
                 <button class="mode-btn active" data-mode="focus">Focus</button>
                 <button class="mode-btn" data-mode="flowtime">Flowtime</button>
+                <button class="mode-btn" data-mode="breath">Breath</button>
                 <button class="mode-btn" data-mode="short">Short Break</button>
                 <button class="mode-btn" data-mode="long">Long Break</button>
+            </div>
+
+            <div id="breath-options" class="breath-options hidden">
+                <button class="breath-session-btn active" data-session="micro">Micro-Reset</button>
+                <button class="breath-session-btn" data-session="standard">Standard Prep</button>
+                <button class="breath-session-btn" data-session="deep">Deep Transition</button>
             </div>
 
             <div class="timer-container">
@@ -33,7 +40,11 @@
                         fill="transparent" r="140" cx="150" cy="150" />
                     <circle class="progress-ring__circle" stroke="white" stroke-width="8" fill="transparent" r="140"
                         cx="150" cy="150" />
+                    <!-- Phase Ring (Inner) -->
+                    <circle class="phase-ring__circle" stroke="var(--accent)" stroke-width="6" fill="transparent"
+                        r="110" cx="150" cy="150" stroke-dasharray="691" stroke-dashoffset="691" />
                 </svg>
+                <div id="breath-instruction" class="breath-instruction hidden">Ready?</div>
                 <div class="timer-display" id="time-display">25:00</div>
             </div>
 
