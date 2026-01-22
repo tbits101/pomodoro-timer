@@ -11,6 +11,7 @@ let currentMode = 'focus';
 let timeLeft = modes[currentMode] * 60;
 let timerId = null;
 let isRunning = false;
+let currentSessionDuration = modes[currentMode] * 60;
 
 const DEFAULT_GOALS = {
     daily: 4,
@@ -24,6 +25,8 @@ let focusCount = 0; // Cumulative focus sessions in one loop
 let flowtimeRatio = 5;
 let elapsedFlowtime = 0; // Track seconds in Flowtime
 let theme = 'system';
+let autoStartBreaks = true;
+let autoStartWork = true;
 
 // Breathing State
 const BREATH_SESSIONS = {
@@ -99,7 +102,8 @@ const inputs = {
     short: document.getElementById('short-time-input'),
     long: document.getElementById('long-time-input'),
     longBreakInterval: document.getElementById('long-break-interval-input'),
-    autoTransition: document.getElementById('auto-transition-toggle'),
+    autoStartBreaks: document.getElementById('auto-start-breaks-toggle'),
+    autoStartWork: document.getElementById('auto-start-work-toggle'),
     preset: document.getElementById('preset-select'),
     flowtimeRatio: document.getElementById('flowtime-ratio-input'),
     dailyGoal: document.getElementById('daily-goal-input'),
@@ -171,12 +175,14 @@ function init() {
     const savedSessionSettings = localStorage.getItem('pomodoroSessionSettings');
     if (savedSessionSettings) {
         const settings = JSON.parse(savedSessionSettings);
-        autoTransition = settings.autoTransition ?? true;
+        autoStartBreaks = settings.autoStartBreaks ?? settings.autoTransition ?? true;
+        autoStartWork = settings.autoStartWork ?? settings.autoTransition ?? true;
         longBreakInterval = settings.longBreakInterval ?? 4;
         focusCount = settings.focusCount ?? 0;
         flowtimeRatio = settings.flowtimeRatio ?? 5;
     }
-    inputs.autoTransition.checked = autoTransition;
+    inputs.autoStartBreaks.checked = autoStartBreaks;
+    inputs.autoStartWork.checked = autoStartWork;
     inputs.longBreakInterval.value = longBreakInterval;
     inputs.flowtimeRatio.value = flowtimeRatio;
 
@@ -229,12 +235,10 @@ function updateDisplay() {
     if (currentMode === 'flowtime') {
         circle.style.strokeDashoffset = 0;
     } else if (currentMode === 'breath') {
-        const totalTime = BREATH_SESSIONS[currentBreathSession].duration * 60;
-        const percent = (timeLeft / totalTime) * 100;
+        const percent = (timeLeft / currentSessionDuration) * 100;
         setProgress(percent, circle, circumference);
     } else {
-        const totalTime = modes[currentMode] * 60;
-        const percent = (timeLeft / totalTime) * 100;
+        const percent = (timeLeft / currentSessionDuration) * 100;
         setProgress(percent, circle, circumference);
     }
 
@@ -257,7 +261,8 @@ function saveSettings() {
     const newDailyGoal = parseFloat(inputs.dailyGoal.value);
     const newWeeklyGoal = parseFloat(inputs.weeklyGoal.value);
     const newLongBreakInterval = parseInt(inputs.longBreakInterval.value);
-    const newAutoTransition = inputs.autoTransition.checked;
+    const newAutoStartBreaks = inputs.autoStartBreaks.checked;
+    const newAutoStartWork = inputs.autoStartWork.checked;
     const newFlowtimeRatio = parseInt(inputs.flowtimeRatio.value);
     const newTheme = inputs.theme.value;
 
@@ -269,12 +274,14 @@ function saveSettings() {
     if (newWeeklyGoal > 0) goals.weekly = newWeeklyGoal;
     if (newLongBreakInterval > 0) longBreakInterval = newLongBreakInterval;
     if (newFlowtimeRatio >= 2) flowtimeRatio = newFlowtimeRatio;
-    autoTransition = newAutoTransition;
+    autoStartBreaks = newAutoStartBreaks;
+    autoStartWork = newAutoStartWork;
 
     localStorage.setItem('pomodoroModes', JSON.stringify(modes));
     localStorage.setItem('pomodoroGoals', JSON.stringify(goals));
     localStorage.setItem('pomodoroSessionSettings', JSON.stringify({
-        autoTransition,
+        autoStartBreaks,
+        autoStartWork,
         longBreakInterval,
         focusCount,
         flowtimeRatio
@@ -375,7 +382,7 @@ function addToHistory(taskName, durationOverride = null) {
         id: Date.now(),
         task: taskName,
         date: new Date().toLocaleString(), // Format nicely?
-        duration: durationOverride || modes.focus
+        duration: durationOverride || Math.round(currentSessionDuration / 60)
     };
 
     history.unshift(entry); // Add to top
@@ -685,15 +692,14 @@ function startTimer() {
                     addToHistory(currentTaskText.textContent);
                     focusCount++;
                     localStorage.setItem('pomodoroSessionSettings', JSON.stringify({
-                        autoTransition,
+                        autoStartBreaks,
+                        autoStartWork,
                         longBreakInterval,
                         focusCount
                     }));
                 }
 
-                if (autoTransition) {
-                    handleAutoTransition();
-                }
+                handleAutoTransition();
             }
         }, 1000);
     }
@@ -715,7 +721,11 @@ function handleAutoTransition() {
     }
 
     switchMode(nextMode);
-    startTimer(); // Auto start next session
+
+    const shouldAutoStart = nextMode === 'focus' ? autoStartWork : autoStartBreaks;
+    if (shouldAutoStart) {
+        startTimer();
+    }
 }
 
 function stopFlowtime() {
@@ -731,6 +741,9 @@ function stopFlowtime() {
         // Switch to break
         currentMode = 'short';
         timeLeft = breakMins * 60;
+        currentSessionDuration = timeLeft;
+
+
 
         pauseTimer(); // Stop the count-up
 
@@ -742,7 +755,7 @@ function stopFlowtime() {
         document.body.className = 'short-break';
         titleDisplay.textContent = 'Short Break';
 
-        if (autoTransition) {
+        if (autoStartBreaks) {
             startTimer(); // Start the calculated break
         } else {
             updateDisplay();
@@ -758,12 +771,15 @@ function pauseTimer() {
     startBtn.textContent = 'Start';
 }
 
+
+
 function resetTimer() {
     pauseTimer();
     elapsedFlowtime = 0;
-    timeLeft = currentMode === 'breath'
+    currentSessionDuration = currentMode === 'breath'
         ? BREATH_SESSIONS[currentBreathSession].duration * 60
         : modes[currentMode] * 60;
+    timeLeft = currentSessionDuration;
 
     // Reset breathing state
     breathPhaseIndex = 0;
@@ -855,6 +871,7 @@ timeDisplay.addEventListener('click', () => {
                 // Don't allow 00:00, reset to default? or just ignore
             } else {
                 timeLeft = (mins * 60) + secs;
+                currentSessionDuration = timeLeft;
             }
         }
 
@@ -954,12 +971,11 @@ function completeActiveTask() {
         durationMins = Math.ceil(elapsedFlowtime / 60);
     } else {
         // Includes 'focus', 'short', 'long' although we only care about focus usually
-        const totalSecs = modes[currentMode] * 60;
-        durationMins = Math.ceil((totalSecs - timeLeft) / 60);
+        durationMins = Math.ceil((currentSessionDuration - timeLeft) / 60);
     }
 
     // Ensure at least 1 min if they spent any time
-    if (durationMins === 0 && (elapsedFlowtime > 0 || (currentMode === 'focus' && timeLeft < modes.focus * 60))) {
+    if (durationMins === 0 && (elapsedFlowtime > 0 || (currentMode === 'focus' && timeLeft < currentSessionDuration))) {
         durationMins = 1;
     }
 
@@ -982,7 +998,8 @@ function completeActiveTask() {
         const breakMins = Math.max(1, Math.floor(elapsedFlowtime / 60 / flowtimeRatio));
         switchMode('short'); // Reset timer state
         timeLeft = breakMins * 60;
-        if (autoTransition) {
+        currentSessionDuration = timeLeft;
+        if (autoStartBreaks) {
             startTimer();
         } else {
             updateDisplay();
@@ -990,8 +1007,10 @@ function completeActiveTask() {
     } else {
         // Standard Pomodoro flow
         switchMode('short');
-        if (autoTransition) {
+        if (autoStartBreaks) {
             startTimer();
+        } else {
+            updateDisplay();
         }
     }
 }

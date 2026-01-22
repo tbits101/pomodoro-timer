@@ -12,12 +12,13 @@ A beautiful, glassmorphism-styled Pomodoro timer built with vanilla HTML, CSS, a
 - **History Log**: Tracks your completed sessions; now with **Inline Editing** for titles, durations, and dates. Includes daily and weekly (Monday-start) summaries with ultra-robust date tracking and automated PWA update notifications.
 - **Glassmorphism Design**: Modern UI with animated gradient backgrounds.
 - **Theming**: Color schemes change based on the active mode.
-- **Session Flow**: Automatic transitions between Work, Short Break, and Long Break configurations (v1.9+).
+- **Session Flow**: Automatic transitions between Work, Short Break, and Long Break configurations; now with **Granular Auto-Start Options** to control next sessions and breaks independently (v1.12+).
 - **Presets**: Quick-select modes for Coding and Study sessions with optimized timings.
 - **Audio & Visual Alerts**: Plays a sound and sends a browser notification when the timer ends.
 - **PWA Support**: Installable on Android/iOS/Desktop with offline support.
 - **Responsive**: Works on desktop and mobile; mode switcher now optimized for small viewports with shortened labels and fluid wrapping (v1.10+).
 - **Immediate Feedback**: Theme selector now updates application colors instantly without needing to save/close (v1.10+).
+- **Precision Progress**: The circular progress ring now correctly recalibrates to exactly 100% when manually editing the timer duration (v1.12+).
 
 ## How to Run
 
@@ -76,6 +77,7 @@ We have a comprehensive plan to evolve this tool into a productivity powerhouse.
 - **2. Session Flow**
     - [x] Automatic transition (Work → Break → Work)
     - [x] Long Break Interval (configurable)
+    - [x] **Granular Auto-Start**: Independent toggles for next work sessions and breaks (v1.12+).
     - [ ] Manual skip option
 - **3. Notifications & Alerts**
     - [x] Sound when session ends
@@ -109,8 +111,8 @@ We have a comprehensive plan to evolve this tool into a productivity powerhouse.
     - [x] **Promotion**: Instantly make any queued task the current active one.
     - [ ] **Subtasks**: Break down larger tasks into smaller checkpoints.
 - **8. Auto-Start Options**
-    - [ ] Auto-start next work session
-    - [ ] Auto-start breaks
+    - [x] Auto-start next work session (v1.12+)
+    - [x] Auto-start breaks (v1.12+)
 - **9. History & Daily Stats**
     - [x] History log of sessions
     - [x] **Delete Items**: Remove specific sessions from history.
