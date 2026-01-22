@@ -81,7 +81,7 @@ We have a comprehensive plan to evolve this tool into a productivity powerhouse.
     - [x] Sound when session ends
     - [x] Browser notification visual alert
 - **4. Session Counter**
-    - [ ] Track completed Pomodoro cycles (e.g., "Pomodoro #1, #2")
+    - [x] Track completed Pomodoro cycles (e.g., "Pomodoro #1, #2") in real-time above the timer (v1.11+).
 - **5. Minimal UI**
     - [x] Timer countdown
     - [x] Current mode display

@@ -710,6 +710,19 @@ body.long-break .mode-btn.active {
     z-index: 2;
 }
 
+.session-counter {
+    position: absolute;
+    top: 2.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    opacity: 0.5;
+    font-weight: 600;
+    z-index: 3;
+}
+
 .progress-ring {
     transform: rotate(-90deg);
 }

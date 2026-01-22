@@ -118,6 +118,7 @@ const breathOptions = document.getElementById('breath-options');
 const breathInstruction = document.getElementById('breath-instruction');
 const phaseCountdown = document.getElementById('phase-countdown');
 const breathSessionBtns = document.querySelectorAll('.breath-session-btn');
+const sessionCounter = document.getElementById('session-counter');
 
 // --- Initialization ---
 
@@ -235,6 +236,17 @@ function updateDisplay() {
         const totalTime = modes[currentMode] * 60;
         const percent = (timeLeft / totalTime) * 100;
         setProgress(percent, circle, circumference);
+    }
+
+    // Update Session Counter
+    if (currentMode === 'focus') {
+        sessionCounter.textContent = `#${focusCount + 1}`;
+        sessionCounter.classList.remove('hidden');
+    } else if (currentMode === 'short' || currentMode === 'long') {
+        sessionCounter.textContent = `Set Progress: ${focusCount}/${longBreakInterval}`;
+        sessionCounter.classList.remove('hidden');
+    } else {
+        sessionCounter.classList.add('hidden');
     }
 }
 
