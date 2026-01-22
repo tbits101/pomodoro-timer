@@ -1,2 +1,2 @@
-const APP_VERSION = "1.11.1";
+const APP_VERSION = "1.12.0";
 const BUILD_TIME = "2026-01-22 19:20";
