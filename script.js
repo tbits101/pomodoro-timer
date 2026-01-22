@@ -267,8 +267,8 @@ function saveSettings() {
         focusCount,
         flowtimeRatio
     }));
+    theme = newTheme;
     localStorage.setItem('pomodoroTheme', theme);
-
     applyTheme(theme);
 
     settingsModal.classList.remove('open');
@@ -1176,6 +1176,10 @@ settingsBtn.addEventListener('click', () => {
 
 inputs.preset.addEventListener('change', (e) => {
     applyPreset(e.target.value);
+});
+
+inputs.theme.addEventListener('change', (e) => {
+    applyTheme(e.target.value);
 });
 
 closeModalBtn.addEventListener('click', () => {

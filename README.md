@@ -16,7 +16,8 @@ A beautiful, glassmorphism-styled Pomodoro timer built with vanilla HTML, CSS, a
 - **Presets**: Quick-select modes for Coding and Study sessions with optimized timings.
 - **Audio & Visual Alerts**: Plays a sound and sends a browser notification when the timer ends.
 - **PWA Support**: Installable on Android/iOS/Desktop with offline support.
-- **Responsive**: Works on desktop and mobile.
+- **Responsive**: Works on desktop and mobile; mode switcher now optimized for small viewports with shortened labels and fluid wrapping (v1.10+).
+- **Immediate Feedback**: Theme selector now updates application colors instantly without needing to save/close (v1.10+).
 
 ## How to Run
 
@@ -89,7 +90,9 @@ We have a comprehensive plan to evolve this tool into a productivity powerhouse.
     - [x] **Settings Reorganization**: Logical groupings and scrollable container.
     - [x] **Early Task Completion**: Records actual elapsed time in history.
     - [x] **Active Task Editing**: Edit the current task text in-place.
-    - [x] **Appearance**: Toggle between Light/Dark/System themes.
+    - [x] **Appearance**: Toggle between Light/Dark/System themes with **Immediate Feedback** (instantly updates colors on selection).
+    - [x] **Mobile Optimization**: Shortened "Short" and "Long" break labels and improved `mode-switcher` wrapping for narrow screens.
+    - [x] **Accessibility & Contrast**: Refined select inputs and primary buttons in settings for better readability and a more premium feel.
     - [ ] **Dynamic Backgrounds**: Gorgeous photo slideshows or ambient videos.
 - **6. Settings (Basic)**
     - [x] Adjust work and break durations
