@@ -135,9 +135,10 @@ We have a comprehensive plan to evolve this tool into a productivity powerhouse.
     - [x] Presets (Coding, Study, Pomodoro)
 - **14. Special Modes**
     - [x] **Flowtime**: Work until your focus dips naturally; take proportional breaks.
-    - [x] **Breath Time**: Guided sessions for focus preparation:
+    - **Breath Time**: Guided sessions for focus preparation:
         - **Dual-Ring Visualization**: Outer ring for session progress, inner ring for phase rhythm.
         - **Phase Countdown**: Real-time seconds display for inhale/hold/exhale.
+        - **Visual Duration Clues**: Session buttons now display timing patterns (e.g., "2-1-4") upfront to eliminate surprises (v1.13+).
         - **Micro-Reset** (1 min): 2-1-4 breathing.
         - **Standard Prep** (3 mins): 6-10 deep slow breaths/min.
         - **Deep Transition** (5 mins): Full mental clearance.

@@ -1197,7 +1197,7 @@ body.breath-mode .mode-btn.active {
 .breath-session-btn {
     background: rgba(255, 255, 255, 0.1);
     border: 1px solid var(--glass-border);
-    padding: 0.5rem 1rem;
+    padding: 0.6rem 1rem;
     border-radius: 12px;
     color: white;
     font-family: inherit;
@@ -1205,6 +1205,18 @@ body.breath-mode .mode-btn.active {
     cursor: pointer;
     transition: all 0.3s ease;
     font-size: 0.8rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+    min-width: 100px;
+}
+
+.duration-clue {
+    font-size: 0.65rem;
+    opacity: 0.6;
+    font-weight: 300;
+    letter-spacing: 0.05em;
 }
 
 .breath-session-btn:hover {
@@ -1216,6 +1228,11 @@ body.breath-mode .mode-btn.active {
     background: white;
     color: #6a11cb;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.breath-session-btn.active .duration-clue {
+    color: #6a11cb;
+    opacity: 0.8;
 }
 
 .breath-instruction {
