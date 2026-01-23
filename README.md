@@ -12,6 +12,7 @@ A beautiful, glassmorphism-styled Pomodoro timer built with vanilla HTML, CSS, a
 - **History Log**: Tracks your completed sessions; now with **Inline Editing** for titles, durations, and dates. Includes daily and weekly (Monday-start) summaries with ultra-robust date tracking and automated PWA update notifications.
 - **Glassmorphism Design**: Modern UI with animated gradient backgrounds.
 - **Theming**: Color schemes change based on the active mode.
+- **Pause & Resume Tracking**: Automatically tracks interruptions and total paused time for each session, visible in history (v1.13+).
 - **Session Flow**: Automatic transitions between Work, Short Break, and Long Break configurations; now with **Granular Auto-Start Options** to control next sessions and breaks independently (v1.12+).
 - **Presets**: Quick-select modes for Coding and Study sessions with optimized timings.
 - **Audio & Visual Alerts**: Plays a sound and sends a browser notification when the timer ends.
@@ -122,7 +123,7 @@ We have a comprehensive plan to evolve this tool into a productivity powerhouse.
     - [x] Daily/Weekly goal tracking
     - [ ] **Advanced Reports**: Monthly and Yearly time distribution analytics.
 - **10. Pause & Resume Tracking**
-    - [ ] Track interruptions and paused time
+    - [x] Track interruptions and paused time (v1.13+)
 - **11. Cross-Platform Sync**
     - [ ] Cloud backup of settings and history
 

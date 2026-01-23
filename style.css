@@ -314,6 +314,13 @@ body.flowtime-break .mode-btn.active {
     letter-spacing: 0.05em;
 }
 
+.history-stats {
+    font-size: 0.75rem;
+    opacity: 0.5;
+    margin-top: 0.2rem;
+    font-style: italic;
+}
+
 .history-duration {
     font-family: monospace;
     font-size: 1rem;

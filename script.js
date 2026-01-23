@@ -28,6 +28,11 @@ let theme = 'system';
 let autoStartBreaks = true;
 let autoStartWork = true;
 
+// Pause & Interruption Tracking
+let sessionInterruptions = 0;
+let sessionPausedTime = 0; // Total seconds paused
+let pauseStartTime = null;
+
 // Breathing State
 const BREATH_SESSIONS = {
     micro: {
@@ -374,15 +379,27 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e =
 
 // --- History Logic ---
 
-function addToHistory(taskName, durationOverride = null) {
+function addToHistory(taskName, durationOverride = null, interruptions = null, pausedTime = null) {
     // Check if there is actually a task name to save
     if (!taskName) taskName = "Untitled Session";
+
+    // Use globals if not provided
+    const finalInterruptions = interruptions !== null ? interruptions : sessionInterruptions;
+    let finalPausedTime = pausedTime !== null ? pausedTime : sessionPausedTime;
+
+    // If currently paused, add the ongoing pause time
+    if (pauseStartTime) {
+        const currentPauseDuration = Math.round((Date.now() - pauseStartTime) / 1000);
+        finalPausedTime += currentPauseDuration;
+    }
 
     const entry = {
         id: Date.now(),
         task: taskName,
         date: new Date().toLocaleString(), // Format nicely?
-        duration: durationOverride || Math.round(currentSessionDuration / 60)
+        duration: durationOverride || Math.round(currentSessionDuration / 60),
+        interruptions: finalInterruptions,
+        pausedTime: finalPausedTime
     };
 
     history.unshift(entry); // Add to top
@@ -499,10 +516,16 @@ function renderHistory() {
             minute: '2-digit'
         });
 
+        const interruptions = item.interruptions || 0;
+        const pausedTime = item.pausedTime || 0;
+        const pausedStr = pausedTime > 0 ? `• Paused: ${Math.round(pausedTime / 60)}m` : '';
+        const interruptionsStr = interruptions > 0 ? ` (${interruptions} interruptions)` : '';
+
         li.innerHTML = `
             <div class="history-info">
                 <span class="history-task" contenteditable="true" data-id="${item.id}" data-type="task">${item.task}</span>
                 <span class="history-time" contenteditable="true" data-id="${item.id}" data-type="date">${dateStr}</span>
+                <div class="history-stats">${pausedStr}${interruptionsStr}</div>
             </div>
             <div class="history-actions">
                 <span class="history-duration" contenteditable="true" data-id="${item.id}" data-type="duration">${item.duration}m</span>
@@ -650,6 +673,14 @@ function startTimer() {
         }
     } else {
         requestNotificationPermission();
+
+        // Resume tracking if we were paused
+        if (pauseStartTime) {
+            const pausedDuration = Math.round((Date.now() - pauseStartTime) / 1000);
+            sessionPausedTime += pausedDuration;
+            pauseStartTime = null;
+        }
+
         isRunning = true;
         startBtn.textContent = currentMode === 'flowtime' ? 'Stop & Break' : 'Pause';
 
@@ -691,6 +722,11 @@ function startTimer() {
                 if (currentMode === 'focus') {
                     addToHistory(currentTaskText.textContent);
                     focusCount++;
+                    // Reset session stats for next
+                    sessionInterruptions = 0;
+                    sessionPausedTime = 0;
+                    pauseStartTime = null;
+
                     localStorage.setItem('pomodoroSessionSettings', JSON.stringify({
                         autoStartBreaks,
                         autoStartWork,
@@ -755,6 +791,11 @@ function stopFlowtime() {
         document.body.className = 'short-break';
         titleDisplay.textContent = 'Short Break';
 
+        // Reset session stats for next (break)
+        sessionInterruptions = 0;
+        sessionPausedTime = 0;
+        pauseStartTime = null;
+
         if (autoStartBreaks) {
             startTimer(); // Start the calculated break
         } else {
@@ -769,6 +810,12 @@ function pauseTimer() {
     clearInterval(timerId);
     isRunning = false;
     startBtn.textContent = 'Start';
+
+    // Track interruption
+    if (currentMode === 'focus' || currentMode === 'flowtime') {
+        sessionInterruptions++;
+        pauseStartTime = Date.now();
+    }
 }
 
 
@@ -789,6 +836,11 @@ function resetTimer() {
         breathInstruction.classList.remove('pulse');
     }
     circle.classList.remove('breathing-ring');
+
+    // Reset tracking stats
+    sessionInterruptions = 0;
+    sessionPausedTime = 0;
+    pauseStartTime = null;
 
     // Reset ring to full
     circle.style.strokeDashoffset = 0;
@@ -992,6 +1044,11 @@ function completeActiveTask() {
 
     // History
     addToHistory(completed.text, durationMins);
+
+    // Reset session stats for next
+    sessionInterruptions = 0;
+    sessionPausedTime = 0;
+    pauseStartTime = null;
 
     // If we were in flowtime, we calculate the special break
     if (currentMode === 'flowtime') {
