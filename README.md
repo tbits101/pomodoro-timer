@@ -67,11 +67,14 @@ A beautiful, glassmorphism-styled timer application built with vanilla HTML, CSS
    If you have `just` installed, you can use these shortcuts:
    - `just serve`: Start the local server.
    - `just status`: Check git status.
-   - `just commit "Your message"`: Stage and commit changes.
-   - `just push`: Push changes to the main branch.
-   - `just deploy`: Deploy to GitHub Pages (merges main to gh-pages).
    - `just version`: Show current app version.
    - `just bump`: Increment patch version and update build time.
+   - `just commit "Your message"`: Stage and commit changes.
+   - `just push`: Push changes to the main branch.
+   - `just tag "Release message"`: Create and push annotated git tag with current version.
+   - `just push-tags`: Push all tags to remote.
+   - `just deploy`: Deploy to GitHub Pages (merges main to gh-pages).
+   - `just release "message"`: Full release workflow (bump, commit, push, tag, deploy).
    - `just`: List all available commands.
     
     **Restoration/Restarting**:

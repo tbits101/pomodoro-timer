@@ -35,6 +35,18 @@ deploy:
 push:
     git push origin main
 
+# Create an annotated git tag with current version and push it
+tag message:
+    #!/usr/bin/env bash
+    VERSION=$(grep -oP 'APP_VERSION = \"\\K[^\"]+' version.js)
+    git tag -a "v$VERSION" -m "{{message}}"
+    git push origin "v$VERSION"
+    echo "Created and pushed tag v$VERSION"
+
+# Push tags only (useful if tag was created but not pushed)
+push-tags:
+    git push --tags
+
 # Show current version
 version:
     @grep -oP 'APP_VERSION = "\K[^"]+' version.js
@@ -56,8 +68,9 @@ set-version ver:
     sed -i "s/CACHE_NAME = 'pomodoro-v.*'/CACHE_NAME = 'pomodoro-v{{ver}}'/" sw.js; \
     echo "Version set to {{ver}} (Sync'd with sw.js)"
 
-# Full release: bump version, check docs, commit, push, and deploy
+# Full release: bump version, check docs, commit, push, tag, and deploy
 release msg: bump check-docs
     just commit "{{msg}}"
     just push
+    just tag "{{msg}}"
     just deploy
