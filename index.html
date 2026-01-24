@@ -20,12 +20,86 @@
         <div class="glass-card">
             <h1 class="title">Focus</h1>
 
-            <div class="mode-switcher">
-                <button class="mode-btn active" data-mode="focus">Focus</button>
-                <button class="mode-btn" data-mode="flowtime">Flowtime</button>
-                <button class="mode-btn" data-mode="breath">Breath</button>
-                <button class="mode-btn" data-mode="short">Short</button>
-                <button class="mode-btn" data-mode="long">Long</button>
+            <nav class="category-nav">
+                <button class="category-btn active" data-category="focus">Focus</button>
+                <button class="category-btn" data-category="health">Health</button>
+                <button class="category-btn" data-category="sport">Sport</button>
+                <button class="category-btn" data-category="kitchen">Kitchen</button>
+                <button class="category-btn" data-category="utility">Utility</button>
+            </nav>
+
+            <div class="submode-container">
+                <!-- Focus Submodes -->
+                <div class="mode-switcher" data-category="focus">
+                    <button class="mode-btn active" data-mode="focus">Pomodoro</button>
+                    <button class="mode-btn" data-mode="flowtime">Flowtime</button>
+                    <button class="mode-btn" data-mode="short">Short Break</button>
+                    <button class="mode-btn" data-mode="long">Long Break</button>
+                </div>
+
+                <!-- Health Submodes -->
+                <div class="mode-switcher hidden" data-category="health">
+                    <button class="mode-btn" data-mode="breath">Breathing</button>
+                    <button class="mode-btn" data-mode="grounding">Grounding</button>
+                    <button class="mode-btn" data-mode="microbreak">Micro-Break</button>
+                </div>
+
+                <!-- Sport Submodes -->
+                <div class="mode-switcher hidden" data-category="sport">
+                    <button class="mode-btn" data-mode="interval">Interval</button>
+                    <button class="mode-btn" data-mode="stopwatch">Stopwatch</button>
+                </div>
+
+                <div id="interval-options" class="sub-options hidden">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem;">
+                        <div class="option-group">
+                            <label>Work (s)</label>
+                            <input type="number" id="interval-work-input" value="40" min="5" step="5"
+                                class="select-input">
+                        </div>
+                        <div class="option-group">
+                            <label>Rest (s)</label>
+                            <input type="number" id="interval-rest-input" value="20" min="5" step="5"
+                                class="select-input">
+                        </div>
+                        <div class="option-group">
+                            <label>Cycles</label>
+                            <input type="number" id="interval-cycles-input" value="8" min="1" class="select-input">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Kitchen Submodes -->
+                <div class="mode-switcher hidden" data-category="kitchen">
+                    <button class="mode-btn active" data-mode="multi">Dashboard</button>
+                    <button class="mode-btn" data-mode="grill">Grill Master</button>
+                </div>
+
+                <div id="grill-presets" class="sub-options hidden">
+                    <div class="option-group">
+                        <label>Steak Doneness</label>
+                        <div class="preset-buttons">
+                            <button class="steak-btn" data-time="4">Rare</button>
+                            <button class="steak-btn" data-time="6">Medium</button>
+                            <button class="steak-btn" data-time="9">Well</button>
+                        </div>
+                    </div>
+                    <div class="option-group">
+                        <label class="toggle-group">
+                            <span>Flip Reminder (2m)</span>
+                            <label class="switch">
+                                <input type="checkbox" id="flip-reminder-toggle">
+                                <span class="slider round"></span>
+                            </label>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Utility Submodes -->
+                <div class="mode-switcher hidden" data-category="utility">
+                    <button class="mode-btn" data-mode="countdown">Countdown</button>
+                    <button class="mode-btn" data-mode="deadline">Deadline</button>
+                </div>
             </div>
 
             <div id="breath-options" class="breath-options hidden">
@@ -55,6 +129,7 @@
                 </svg>
                 <div id="session-counter" class="session-counter hidden">#1</div>
                 <div id="breath-instruction" class="breath-instruction hidden">Ready?</div>
+                <div id="grounding-instruction" class="grounding-instruction hidden">Focus on your surroundings</div>
                 <div id="phase-countdown" class="phase-countdown"></div>
                 <div class="timer-display" id="time-display">25:00</div>
             </div>

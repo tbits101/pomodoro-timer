@@ -1,25 +1,58 @@
-# Modern Pomodoro Timer
+# Modern Multi-Purpose Timer
 
-A beautiful, glassmorphism-styled Pomodoro timer built with vanilla HTML, CSS, and JavaScript.
+A beautiful, glassmorphism-styled timer application built with vanilla HTML, CSS, and JavaScript. Originally a Pomodoro timer, now evolved into a versatile timing tool for productivity, health, sports, and kitchen tasks.
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
 ## Features (Current)
-- **25-minute Focus Timer**: Standard Pomodoro duration.
+
+### 🎯 Focus & Productivity
+- **Pomodoro Timer**: Standard 25-minute focus sessions with customizable breaks.
+- **Flowtime Mode**: Work until your focus dips naturally; take proportional breaks.
 - **Customizable Modes**: Switch between Focus, Short Break (5m), and Long Break (15m).
-- **Settings**: Customize the duration of each mode; saves to your browser.
-- **Goal Tracking**: Set daily and weekly focus goals in settings and track progress with visual bars in the history summary (v1.8+).
-- **History Log**: Tracks your completed sessions; now with **Inline Editing** for titles, durations, and dates. Includes daily and weekly (Monday-start) summaries with ultra-robust date tracking and automated PWA update notifications.
+- **Session Flow**: Automatic transitions between Work, Short Break, and Long Break with **Granular Auto-Start Options** (v1.12+).
+- **Goal Tracking**: Set daily and weekly focus goals with visual progress bars (v1.8+).
+
+### 🧘 Health & Wellness
+- **Breathing Exercises**: Guided breathing sessions with dual-ring visualization and phase countdown (v1.13+).
+  - Micro-Reset (1 min): 2-1-4 breathing
+  - Standard Prep (3 mins): 6-10 deep slow breaths/min
+  - Deep Transition (5 mins): Full mental clearance
+- **Grounding (5-4-3-2-1)**: 5-minute guided sensory grounding exercise (v1.15+).
+- **Micro-Break**: Quick 1-minute rest timer (v1.15+).
+
+### 🏃 Sport & Fitness
+- **Interval Training**: Customizable work/rest cycles with configurable durations and cycle counts (v1.15+).
+- **Stopwatch**: Count-up timer for open-ended activities (v1.15+).
+
+### 🍳 Kitchen & Cooking
+- **Grill Master**: Steak doneness presets (Rare/Medium/Well) with optional flip reminders (v1.15+).
+- **Multi-Timer Dashboard**: Manage multiple timers simultaneously (coming soon).
+
+### ⏱️ Utility Timers
+- **Countdown Timer**: General-purpose countdown for any duration.
+- **Deadline Timer**: Track time remaining until a specific deadline (coming soon).
+
+### 📊 Tracking & History
+- **History Log**: Tracks completed sessions with **Inline Editing** for titles, durations, and dates.
+- **Pause & Resume Tracking**: Automatically tracks interruptions and total paused time (v1.13+).
+- **Daily & Weekly Summaries**: Ultra-robust date tracking with Monday-start weeks.
+
+### 🎨 Design & UX
 - **Glassmorphism Design**: Modern UI with animated gradient backgrounds.
-- **Theming**: Color schemes change based on the active mode.
-- **Pause & Resume Tracking**: Automatically tracks interruptions and total paused time for each session, visible in history (v1.13+).
-- **Session Flow**: Automatic transitions between Work, Short Break, and Long Break configurations; now with **Granular Auto-Start Options** to control next sessions and breaks independently (v1.12+).
-- **Presets**: Quick-select modes for Coding and Study sessions with optimized timings.
-- **Audio & Visual Alerts**: Plays a sound and sends a browser notification when the timer ends.
-- **PWA Support**: Installable on Android/iOS/Desktop with offline support.
-- **Responsive**: Works on desktop and mobile; mode switcher now optimized for small viewports with shortened labels and fluid wrapping (v1.10+).
-- **Immediate Feedback**: Theme selector now updates application colors instantly without needing to save/close (v1.10+).
-- **Precision Progress**: The circular progress ring now correctly recalibrates to exactly 100% when manually editing the timer duration (v1.12+).
+- **Category-Based Theming**: Color schemes change based on active category (Focus, Health, Sport, Kitchen, Utility).
+- **Immediate Theme Switching**: Light/Dark/System themes with instant feedback (v1.10+).
+- **Responsive**: Optimized for desktop and mobile with fluid wrapping (v1.10+).
+- **Direct Timer Edit**: Click the timer text to type a custom time.
+
+### 🔧 Task Management
+- **Task Queue**: Add multiple tasks to an "Up Next" list with drag & drop reordering.
+- **Inline Editing**: Click any task to edit its text.
+- **Auto-Advance**: Automatically switch to the next task upon completion.
+
+### 🔔 Notifications
+- **Audio & Visual Alerts**: Plays sound and sends browser notifications when timers end.
+- **PWA Support**: Installable on Android/iOS/Desktop with offline support and automated update notifications.
 
 ## How to Run
 
@@ -144,6 +177,13 @@ We have a comprehensive plan to evolve this tool into a productivity powerhouse.
         - **Standard Prep** (3 mins): 6-10 deep slow breaths/min.
         - **Deep Transition** (5 mins): Full mental clearance.
         - **Mobile Optimized**: Refined layout for Android and small viewports.
+    - [x] **Grounding (5-4-3-2-1)**: 5-minute guided sensory grounding exercise (v1.15+).
+    - [x] **Micro-Break**: Quick 1-minute rest timer (v1.15+).
+    - [x] **Interval Training**: Customizable work/rest cycles for fitness (v1.15+).
+    - [x] **Stopwatch**: Count-up timer for open-ended activities (v1.15+).
+    - [x] **Grill Master**: Steak doneness presets with flip reminders (v1.15+).
+    - [ ] **Multi-Timer Dashboard**: Manage multiple kitchen timers simultaneously.
+    - [ ] **Deadline Timer**: Track time remaining until a specific deadline.
 - **15. Distraction Management**
     - [ ] Website blocking integration
     - [ ] "Do Not Disturb" integration

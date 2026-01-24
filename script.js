@@ -7,7 +7,9 @@ const DEFAULT_MODES = {
 
 let modes = { ...DEFAULT_MODES };
 let history = []; // [{ id, task, date, duration }]
-let currentMode = 'focus';
+let currentCategory = 'focus';
+let currentSubMode = 'focus';
+let currentMode = 'focus'; // Keep for compatibility with existing logic for now
 let timeLeft = modes[currentMode] * 60;
 let timerId = null;
 let isRunning = false;
@@ -61,14 +63,38 @@ const BREATH_SESSIONS = {
 };
 
 let currentBreathSession = 'micro';
-let breathPhaseIndex = 0;
 let breathTimeInPhase = 0;
+
+// Sport Interval State
+let intervalWorkTime = 40;
+let intervalRestTime = 20;
+let totalIntervalCycles = 8;
+let currentCycle = 1;
+let isIntervalRest = false;
+
+// Grounding State
+const GROUNDING_STEPS = [
+    { count: 5, prompt: "Things you see" },
+    { count: 4, prompt: "Things you can touch" },
+    { count: 3, prompt: "Things you hear" },
+    { count: 2, prompt: "Things you can smell" },
+    { count: 1, prompt: "Thing you can taste" }
+];
+let groundingStepIndex = 0;
+
+// Grill Master State
+let flipReminderInterval = 120; // 2 minutes
+let isFlipReminderEnabled = false;
+let flipReminderTimer = null;
+let lastFlipTime = 0;
 
 // DOM Elements
 const timeDisplay = document.getElementById('time-display');
 const startBtn = document.getElementById('start-btn');
 const resetBtn = document.getElementById('reset-btn');
 const alarmSound = document.getElementById('alarm-sound');
+const categoryBtns = document.querySelectorAll('.category-btn');
+const submodeSwitchers = document.querySelectorAll('.mode-switcher');
 const modeBtns = document.querySelectorAll('.mode-btn');
 const titleDisplay = document.querySelector('.title');
 
@@ -125,9 +151,21 @@ const goalTextWeek = document.getElementById('goal-text-week');
 // Breathing Elements
 const breathOptions = document.getElementById('breath-options');
 const breathInstruction = document.getElementById('breath-instruction');
+const groundingInstruction = document.getElementById('grounding-instruction');
 const phaseCountdown = document.getElementById('phase-countdown');
 const breathSessionBtns = document.querySelectorAll('.breath-session-btn');
 const sessionCounter = document.getElementById('session-counter');
+
+// Grill Elements
+const grillPresets = document.getElementById('grill-presets');
+const steakBtns = document.querySelectorAll('.steak-btn');
+const flipToggle = document.getElementById('flip-reminder-toggle');
+
+// Sport Elements
+const intervalOptions = document.getElementById('interval-options');
+const intervalWorkInput = document.getElementById('interval-work-input');
+const intervalRestInput = document.getElementById('interval-rest-input');
+const intervalCyclesInput = document.getElementById('interval-cycles-input');
 
 // --- Initialization ---
 
@@ -205,7 +243,7 @@ function init() {
     }
 
     // Set initial timer
-    resetTimer();
+    switchCategory('focus');
 }
 
 // --- Helpers ---
@@ -228,11 +266,23 @@ function updateDisplay() {
     const displayTime = currentMode === 'flowtime' ? elapsedFlowtime : timeLeft;
     timeDisplay.textContent = formatTime(displayTime);
 
-    const modeName = currentMode === 'focus' ? 'Focus' :
-        currentMode === 'flowtime' ? 'Flowtime Focus' :
-            currentMode === 'breath' ? 'Breath' :
-                currentMode === 'short' ? 'Short Break' : 'Long Break';
+    // Map submodes to user-friendly names
+    const modeNameMap = {
+        focus: 'Focus',
+        flowtime: 'Flowtime Focus',
+        short: 'Short Break',
+        long: 'Long Break',
+        breath: 'Breathing',
+        grounding: 'Grounding',
+        microbreak: 'Micro-Break',
+        interval: 'Interval',
+        stopwatch: 'Stopwatch',
+        multi: 'Kitchen',
+        countdown: 'Timer',
+        deadline: 'Deadline'
+    };
 
+    const modeName = modeNameMap[currentMode] || 'Timer';
     const taskPart = currentTaskText.textContent ? `[${currentTaskText.textContent}] ` : '';
     document.title = `${formatTime(displayTime)} - ${taskPart}${modeName}`;
 
@@ -253,6 +303,9 @@ function updateDisplay() {
         sessionCounter.classList.remove('hidden');
     } else if (currentMode === 'short' || currentMode === 'long') {
         sessionCounter.textContent = `Set Progress: ${focusCount}/${longBreakInterval}`;
+        sessionCounter.classList.remove('hidden');
+    } else if (currentMode === 'interval') {
+        sessionCounter.textContent = `Cycle ${currentCycle}/${totalIntervalCycles} - ${isIntervalRest ? 'REST' : 'WORK'}`;
         sessionCounter.classList.remove('hidden');
     } else {
         sessionCounter.classList.add('hidden');
@@ -319,37 +372,220 @@ function applyPreset(presetName) {
     }
 }
 
-function switchMode(mode) {
-    currentMode = mode;
+function handleFlipReminder() {
+    if (!isRunning || !isFlipReminderEnabled || currentMode !== 'grill') return;
 
+    const elapsed = Math.round((currentSessionDuration - timeLeft));
+    if (elapsed > 0 && elapsed % flipReminderInterval === 0 && elapsed !== lastFlipTime) {
+        lastFlipTime = elapsed;
+        if (soundEnabled) {
+            // Distinct sound for flip or just reuse alarm briefly?
+            // Reusing alarm but stopping it quickly
+            alarmSound.play().catch(e => console.log('Audio error', e));
+            setTimeout(() => {
+                alarmSound.pause();
+                alarmSound.currentTime = 0;
+            }, 1000);
+        }
+        if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification('Grill Master', {
+                body: 'Time to flip the meat!',
+                icon: 'https://cdn-icons-png.flaticon.com/512/2928/2928750.png'
+            });
+        }
+    }
+}
+
+function handleGroundingTick() {
+    if (!isRunning) return;
+
+    // 5 steps, 1 min each for a 5 min session
+    const stepDuration = 60;
+    const stepIndex = Math.min(4, Math.floor((currentSessionDuration - timeLeft) / stepDuration));
+
+    if (stepIndex !== groundingStepIndex) {
+        groundingStepIndex = stepIndex;
+        // Pulse effect?
+        groundingInstruction.classList.remove('pulse');
+        void groundingInstruction.offsetWidth; // trigger reflow
+        groundingInstruction.classList.add('pulse');
+    }
+
+    const step = GROUNDING_STEPS[groundingStepIndex];
+    groundingInstruction.textContent = `Focus on ${step.count} ${step.prompt}`;
+}
+
+function handleIntervalTick() {
+    if (!isRunning) return;
+
+    if (timeLeft <= 0) {
+        // Switch between Work and Rest
+        if (!isIntervalRest) {
+            // End of Work
+            isIntervalRest = true;
+            timeLeft = intervalRestTime;
+            currentSessionDuration = intervalRestTime;
+            if (soundEnabled) alarmSound.play().catch(e => console.log('Audio error', e));
+        } else {
+            // End of Rest
+            isIntervalRest = false;
+            currentCycle++;
+
+            if (currentCycle > totalIntervalCycles) {
+                // Entire session complete
+                clearInterval(timerId);
+                isRunning = false;
+                startBtn.textContent = 'Start';
+                if (soundEnabled) alarmSound.play().catch(e => console.log('Audio error', e));
+                showNotification();
+                setTimeout(() => switchCategory('focus'), 2000);
+                return;
+            }
+
+            timeLeft = intervalWorkTime;
+            currentSessionDuration = intervalWorkTime;
+            if (soundEnabled) alarmSound.play().catch(e => console.log('Audio error', e));
+        }
+    }
+}
+
+function switchCategory(category) {
+    if (currentCategory === category && document.querySelector(`.category-btn[data-category="${category}"]`).classList.contains('active')) {
+        // Already in this category, just ensure submode switcher is visible
+        submodeSwitchers.forEach(switcher => {
+            switcher.classList.toggle('hidden', switcher.dataset.category !== category);
+        });
+        return;
+    }
+
+    currentCategory = category;
+
+    // Update Category UI
+    categoryBtns.forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.category === category);
+    });
+
+    // Show relevant submode switcher
+    submodeSwitchers.forEach(switcher => {
+        switcher.classList.toggle('hidden', switcher.dataset.category !== category);
+    });
+
+    // Reset Body Classes for Categories
+    document.body.classList.remove('focus-category', 'health-category', 'sport-category', 'kitchen-category', 'utility-category');
+    document.body.classList.add(`${category}-category`);
+
+    // Switch to first submode in category
+    const firstSubmode = document.querySelector(`.mode-switcher[data-category="${category}"] .mode-btn`);
+    if (firstSubmode) {
+        switchMode(firstSubmode.dataset.mode);
+    }
+}
+
+function switchMode(mode) {
+    // Map modes to categories for automatic syncing
+    const modeToCategory = {
+        focus: 'focus', flowtime: 'focus', short: 'focus', long: 'focus',
+        breath: 'health', grounding: 'health', microbreak: 'health',
+        interval: 'sport', stopwatch: 'sport',
+        multi: 'kitchen', grill: 'kitchen',
+        countdown: 'utility', deadline: 'utility'
+    };
+
+    const targetCategory = modeToCategory[mode];
+    if (targetCategory && targetCategory !== currentCategory) {
+        // Sync Category UI if switching to a mode in a different category
+        currentCategory = targetCategory;
+        categoryBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.category === targetCategory));
+        submodeSwitchers.forEach(switcher => switcher.classList.toggle('hidden', switcher.dataset.category !== targetCategory));
+        document.body.classList.remove('focus-category', 'health-category', 'sport-category', 'kitchen-category', 'utility-category');
+        document.body.classList.add(`${targetCategory}-category`);
+    }
+
+    currentSubMode = mode;
+    currentMode = mode; // Compatibility
+
+    // Update Mode Buttons UI (across all switchers)
     modeBtns.forEach(btn => {
-        btn.classList.remove('active');
-        if (btn.dataset.mode === mode) btn.classList.add('active');
+        btn.classList.toggle('active', btn.dataset.mode === mode);
     });
 
     // Manage mode classes without overwriting theme classes
-    document.body.classList.remove('focus-mode', 'short-break-break', 'long-break-break', 'flowtime-break', 'breath-mode');
+    document.body.classList.remove('focus-mode', 'short-break', 'long-break', 'flowtime-mode', 'breath-mode', 'grounding-mode', 'microbreak-mode', 'interval-mode', 'stopwatch-mode', 'multi-mode', 'countdown-mode', 'deadline-mode');
 
-    // Hide breath options by default
+    // Hide specific option panels
     breathOptions.classList.add('hidden');
     breathInstruction.classList.add('hidden');
+    groundingInstruction.classList.add('hidden');
+    grillPresets.classList.add('hidden');
+    intervalOptions.classList.add('hidden');
     circle.classList.remove('breathing-ring');
 
+    // Mode-specific initialization
     if (mode === 'flowtime') {
-        document.body.classList.add('flowtime-break');
+        document.body.classList.add('flowtime-mode');
+        titleDisplay.textContent = 'Flowtime';
     } else if (mode === 'breath') {
         document.body.classList.add('breath-mode');
         breathOptions.classList.remove('hidden');
         timeLeft = BREATH_SESSIONS[currentBreathSession].duration * 60;
-    } else if (mode !== 'focus') {
-        document.body.classList.add(`${mode}-break`);
+        titleDisplay.textContent = 'Breathing';
+    } else if (mode === 'grounding') {
+        document.body.classList.add('grounding-mode');
+        groundingInstruction.classList.remove('hidden');
+        titleDisplay.textContent = 'Grounding';
+        timeLeft = 5 * 60;
+        groundingStepIndex = -1; // Force first step update
+        handleGroundingTick();
+    } else if (mode === 'microbreak') {
+        document.body.classList.add('health-mode');
+        titleDisplay.textContent = 'Micro-Break';
+        timeLeft = 1 * 60;
+    } else if (mode === 'interval') {
+        document.body.classList.add('interval-mode');
+        intervalOptions.classList.remove('hidden');
+        titleDisplay.textContent = 'Intervals';
+
+        intervalWorkTime = parseInt(intervalWorkInput?.value) || 40;
+        intervalRestTime = parseInt(intervalRestInput?.value) || 20;
+        totalIntervalCycles = parseInt(intervalCyclesInput?.value) || 8;
+
+        currentCycle = 1;
+        isIntervalRest = false;
+        timeLeft = intervalWorkTime;
+        currentSessionDuration = timeLeft;
+    } else if (mode === 'stopwatch') {
+        document.body.classList.add('sport-mode');
+        titleDisplay.textContent = 'Stopwatch';
+        timeLeft = 0; // Stopwatch starts at 0
+    } else if (mode === 'grill') {
+        document.body.classList.add('grill-mode');
+        grillPresets.classList.remove('hidden');
+        titleDisplay.textContent = 'Grill Master';
+        timeLeft = 6 * 60; // Default Medium
+    } else if (mode === 'short') {
+        document.body.classList.add('short-break');
+        titleDisplay.textContent = 'Short Break';
+        timeLeft = modes.short * 60;
+    } else if (mode === 'long') {
+        document.body.classList.add('long-break');
+        titleDisplay.textContent = 'Long Break';
+        timeLeft = modes.long * 60;
+    } else if (mode === 'multi') {
+        document.body.classList.add('multi-mode');
+        titleDisplay.textContent = 'Kitchen';
+        timeLeft = 0;
+    } else if (mode === 'countdown') {
+        document.body.classList.add('countdown-mode');
+        titleDisplay.textContent = 'Timer';
+        timeLeft = 10 * 60;
+    } else {
+        // Default (Focus)
+        document.body.classList.add('focus-mode');
+        titleDisplay.textContent = 'Focus';
+        timeLeft = modes.focus * 60;
     }
 
-    titleDisplay.textContent = mode === 'focus' ? 'Focus' :
-        mode === 'flowtime' ? 'Flowtime' :
-            mode === 'breath' ? 'Breath' :
-                mode === 'short' ? 'Short Break' : 'Long Break';
-
+    currentSessionDuration = timeLeft;
     resetTimer();
 }
 
@@ -690,12 +926,20 @@ function startTimer() {
             } else if (currentMode === 'breath') {
                 handleBreathingTick();
             } else {
-                timeLeft--;
+                if (currentMode === 'stopwatch') {
+                    timeLeft++;
+                } else {
+                    timeLeft--;
+                }
+
+                if (currentMode === 'grill') handleFlipReminder();
+                if (currentMode === 'grounding') handleGroundingTick();
+                if (currentMode === 'interval') handleIntervalTick();
             }
 
             updateDisplay();
 
-            if (currentMode !== 'flowtime' && timeLeft <= 0) {
+            if (currentMode !== 'flowtime' && currentMode !== 'stopwatch' && timeLeft <= 0) {
                 clearInterval(timerId);
                 isRunning = false;
                 startBtn.textContent = 'Start';
@@ -742,6 +986,9 @@ function startTimer() {
 }
 
 function handleAutoTransition() {
+    // Only auto-transition in Focus category
+    if (currentCategory !== 'focus') return;
+
     let nextMode = 'focus';
 
     if (currentMode === 'focus') {
@@ -1223,6 +1470,12 @@ updateTaskUI();
 startBtn.addEventListener('click', startTimer);
 resetBtn.addEventListener('click', resetTimer);
 
+categoryBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+        switchCategory(btn.dataset.category);
+    });
+});
+
 modeBtns.forEach(btn => {
     btn.addEventListener('click', () => {
         switchMode(btn.dataset.mode);
@@ -1318,6 +1571,22 @@ clearHistoryBtn.addEventListener('click', () => {
         localStorage.removeItem('pomodoroHistory');
         renderHistory();
     }
+});
+
+// Grill Master Interactions
+steakBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+        steakBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        timeLeft = parseInt(btn.dataset.time) * 60;
+        currentSessionDuration = timeLeft;
+        updateDisplay();
+    });
+});
+
+flipToggle.addEventListener('change', (e) => {
+    isFlipReminderEnabled = e.target.checked;
+    lastFlipTime = 0;
 });
 
 // Start
