@@ -75,6 +75,22 @@
                     <button class="mode-btn" data-mode="grill">Grill Master</button>
                 </div>
 
+                <div id="multi-timer-dashboard" class="multi-timer-dashboard hidden">
+                    <div class="dashboard-controls">
+                        <button id="add-timer-btn" class="btn primary small-btn">+ Add Timer</button>
+                    </div>
+                    <div class="quick-presets">
+                        <span style="font-size: 0.8rem; opacity: 0.7; margin-right: 0.5rem;">Quick Add:</span>
+                        <button class="preset-time-btn" data-time="60">1m</button>
+                        <button class="preset-time-btn" data-time="180">3m</button>
+                        <button class="preset-time-btn" data-time="300">5m</button>
+                        <button class="preset-time-btn" data-time="600">10m</button>
+                    </div>
+                    <div id="timer-grid" class="timer-grid">
+                        <!-- Timer cards injected here -->
+                    </div>
+                </div>
+
                 <div id="grill-presets" class="sub-options hidden">
                     <div class="option-group">
                         <label>Steak Doneness</label>

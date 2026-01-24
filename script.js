@@ -88,6 +88,10 @@ let isFlipReminderEnabled = false;
 let flipReminderTimer = null;
 let lastFlipTime = 0;
 
+// Multi-Timer State
+let multiTimers = []; // { id, name, duration, timeLeft, isRunning }
+let multiTimerIntervalId = null;
+
 // DOM Elements
 const timeDisplay = document.getElementById('time-display');
 const startBtn = document.getElementById('start-btn');
@@ -166,6 +170,12 @@ const intervalOptions = document.getElementById('interval-options');
 const intervalWorkInput = document.getElementById('interval-work-input');
 const intervalRestInput = document.getElementById('interval-rest-input');
 const intervalCyclesInput = document.getElementById('interval-cycles-input');
+
+// Multi-Timer Elements
+const multiTimerDashboard = document.getElementById('multi-timer-dashboard');
+const timerGrid = document.getElementById('timer-grid');
+const addTimerBtn = document.getElementById('add-timer-btn');
+const presetTimeBtns = document.querySelectorAll('.preset-time-btn');
 
 // --- Initialization ---
 
@@ -583,6 +593,13 @@ function switchMode(mode) {
         document.body.classList.add('focus-mode');
         titleDisplay.textContent = 'Focus';
         timeLeft = modes.focus * 60;
+    }
+
+    // Special handling for Multi-Timer persistence
+    if (mode === 'multi') {
+        if (!multiTimerIntervalId) {
+            startMultiTimerLoop();
+        }
     }
 
     currentSessionDuration = timeLeft;
@@ -1590,6 +1607,171 @@ flipToggle.addEventListener('change', (e) => {
 });
 
 // Start
+// === Multi-Timer Logic ===
+
+function createTimer(duration, name = 'Timer') {
+    const id = Date.now();
+    const timer = {
+        id,
+        name: `${name} ${multiTimers.length + 1}`,
+        duration,
+        timeLeft: duration,
+        isRunning: false,
+        totalDuration: duration
+    };
+    multiTimers.push(timer);
+    renderTimerCards();
+    saveMultiTimers();
+}
+
+function deleteTimer(id) {
+    multiTimers = multiTimers.filter(t => t.id !== id);
+    renderTimerCards();
+    saveMultiTimers();
+}
+
+function toggleMultiTimer(id) {
+    const timer = multiTimers.find(t => t.id === id);
+    if (timer) {
+        timer.isRunning = !timer.isRunning;
+        renderTimerCards();
+        checkMultiTimerLoop();
+    }
+}
+
+function resetMultiTimer(id) {
+    const timer = multiTimers.find(t => t.id === id);
+    if (timer) {
+        timer.isRunning = false;
+        timer.timeLeft = timer.totalDuration;
+        renderTimerCards();
+        checkMultiTimerLoop();
+    }
+}
+
+function startMultiTimerLoop() {
+    if (multiTimerIntervalId) return;
+    multiTimerIntervalId = setInterval(() => {
+        let activeTimers = 0;
+        multiTimers.forEach(timer => {
+            if (timer.isRunning && timer.timeLeft > 0) {
+                timer.timeLeft--;
+                activeTimers++;
+                if (timer.timeLeft <= 0) {
+                    timer.isRunning = false;
+                    timer.timeLeft = 0;
+                    playMultiTimerSound(timer.name);
+                }
+                updateTimerCard(timer.id);
+            }
+        });
+        if (activeTimers === 0 && multiTimers.every(t => !t.isRunning)) {
+            // Optional: stop loop if nothing running? 
+            // Better to keep running if in multi mode, or just rely on state.
+        }
+    }, 1000);
+}
+
+function checkMultiTimerLoop() {
+    const anyRunning = multiTimers.some(t => t.isRunning);
+    if (anyRunning && !multiTimerIntervalId) {
+        startMultiTimerLoop();
+    } else if (!anyRunning && multiTimerIntervalId) {
+        clearInterval(multiTimerIntervalId);
+        multiTimerIntervalId = null;
+    }
+}
+
+function playMultiTimerSound(name) {
+    if (soundEnabled) {
+        alarmSound.play().catch(e => console.log(e));
+        if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification('Kitchen Timer', { body: `${name} is done!` });
+        }
+    }
+}
+
+function renderTimerCards() {
+    timerGrid.innerHTML = '';
+    multiTimers.forEach(timer => {
+        const card = document.createElement('div');
+        card.className = `timer-card ${timer.isRunning ? 'running' : ''} ${timer.timeLeft === 0 && timer.totalDuration > 0 ? 'finished' : ''}`;
+        card.id = `timer-card-${timer.id}`;
+
+        const progressPct = ((timer.totalDuration - timer.timeLeft) / timer.totalDuration) * 100;
+
+        card.innerHTML = `
+            <div class="timer-card-header">
+                <input type="text" class="timer-name" value="${timer.name}" onchange="updateTimerName(${timer.id}, this.value)">
+                <button class="timer-close-btn" onclick="deleteTimer(${timer.id})">✕</button>
+            </div>
+            <div class="timer-digits">${formatTime(timer.timeLeft)}</div>
+            <div class="timer-card-controls">
+                <button class="card-btn ${timer.isRunning ? 'pause' : 'start'}" onclick="toggleMultiTimer(${timer.id})">
+                    ${timer.isRunning ? 'Pause' : 'Start'}
+                </button>
+                <button class="card-btn reset" onclick="resetMultiTimer(${timer.id})">Reset</button>
+            </div>
+            <div class="card-progress" style="width: ${progressPct}%"></div>
+        `;
+        timerGrid.appendChild(card);
+    });
+}
+
+function updateTimerCard(id) {
+    const timer = multiTimers.find(t => t.id === id);
+    if (!timer) return;
+
+    const card = document.getElementById(`timer-card-${id}`);
+    if (card) {
+        card.querySelector('.timer-digits').textContent = formatTime(timer.timeLeft);
+        const progressParams = ((timer.totalDuration - timer.timeLeft) / timer.totalDuration) * 100;
+        card.querySelector('.card-progress').style.width = `${progressParams}%`;
+
+        if (timer.timeLeft === 0) {
+            card.classList.add('finished');
+            card.classList.remove('running');
+            card.querySelector('.card-btn').textContent = 'Start';
+            card.querySelector('.card-btn').className = 'card-btn start';
+        }
+    }
+}
+
+function updateTimerName(id, newName) {
+    const timer = multiTimers.find(t => t.id === id);
+    if (timer) {
+        timer.name = newName;
+        saveMultiTimers();
+    }
+}
+
+function saveMultiTimers() {
+    localStorage.setItem('pomodoroMultiTimers', JSON.stringify(multiTimers));
+}
+
+function loadMultiTimers() {
+    const saved = localStorage.getItem('pomodoroMultiTimers');
+    if (saved) {
+        multiTimers = JSON.parse(saved);
+        renderTimerCards();
+    }
+}
+
+// Event Listeners for Multi-Timer
+if (addTimerBtn) {
+    addTimerBtn.addEventListener('click', () => createTimer(300)); // Default 5 min
+}
+
+presetTimeBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+        const time = parseInt(btn.dataset.time);
+        createTimer(time);
+    });
+});
+
+// Init Load
+loadMultiTimers();
+
 init();
 
 // --- PWA Update Logic ---

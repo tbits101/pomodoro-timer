@@ -27,7 +27,7 @@ A beautiful, glassmorphism-styled timer application built with vanilla HTML, CSS
 
 ### 🍳 Kitchen & Cooking
 - **Grill Master**: Steak doneness presets (Rare/Medium/Well) with optional flip reminders (v1.15+).
-- **Multi-Timer Dashboard**: Manage multiple timers simultaneously (coming soon).
+- **Multi-Timer Dashboard**: Run multiple independent timers simultaneously for complex cooking tasks (v1.16+).
 
 ### ⏱️ Utility Timers
 - **Countdown Timer**: General-purpose countdown for any duration.
