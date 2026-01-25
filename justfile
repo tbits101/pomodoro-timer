@@ -38,7 +38,7 @@ push:
 # Create an annotated git tag with current version and push it
 tag message:
     #!/usr/bin/env bash
-    VERSION=$(grep -oP 'APP_VERSION = \"\\K[^\"]+' version.js)
+    VERSION=$(grep -oP 'APP_VERSION = "\K[^"]+' version.js)
     git tag -a "v$VERSION" -m "{{message}}"
     git push origin "v$VERSION"
     echo "Created and pushed tag v$VERSION"
