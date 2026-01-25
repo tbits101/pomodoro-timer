@@ -185,7 +185,7 @@ We have a comprehensive plan to evolve this tool into a productivity powerhouse.
     - [x] **Interval Training**: Customizable work/rest cycles for fitness (v1.15+).
     - [x] **Stopwatch**: Count-up timer for open-ended activities (v1.15+).
     - [x] **Grill Master**: Steak doneness presets with flip reminders (v1.15+).
-    - [ ] **Multi-Timer Dashboard**: Manage multiple kitchen timers simultaneously.
+    - [x] **Multi-Timer Dashboard**: Run multiple independent timers simultaneously. Now supports **Inline Editing** (click time to change) and distinct visual styles (v1.16+).
     - [ ] **Deadline Timer**: Track time remaining until a specific deadline.
 - **15. Distraction Management**
     - [ ] Website blocking integration

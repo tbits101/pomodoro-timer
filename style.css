@@ -1531,6 +1531,12 @@ body.breath-mode .phase-countdown {
     display: block;
 }
 
+/* Hide Main Timer in Multi Mode */
+body.multi-mode .timer-container,
+body.multi-mode .controls {
+    display: none;
+}
+
 /* === Multi-Timer Dashboard === */
 .multi-timer-dashboard {
     width: 100%;

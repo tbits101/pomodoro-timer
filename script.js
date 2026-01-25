@@ -528,6 +528,7 @@ function switchMode(mode) {
     groundingInstruction.classList.add('hidden');
     grillPresets.classList.add('hidden');
     intervalOptions.classList.add('hidden');
+    multiTimerDashboard.classList.add('hidden');
     circle.classList.remove('breathing-ring');
 
     // Mode-specific initialization
@@ -572,6 +573,7 @@ function switchMode(mode) {
         grillPresets.classList.remove('hidden');
         titleDisplay.textContent = 'Grill Master';
         timeLeft = 6 * 60; // Default Medium
+        currentSessionDuration = timeLeft; // Ensure duration is set
     } else if (mode === 'short') {
         document.body.classList.add('short-break');
         titleDisplay.textContent = 'Short Break';
@@ -582,11 +584,13 @@ function switchMode(mode) {
         timeLeft = modes.long * 60;
     } else if (mode === 'multi') {
         document.body.classList.add('multi-mode');
+        multiTimerDashboard.classList.remove('hidden');
         titleDisplay.textContent = 'Kitchen';
         timeLeft = 0;
     } else if (mode === 'countdown') {
         document.body.classList.add('countdown-mode');
         titleDisplay.textContent = 'Timer';
+        timeLeft = 10 * 60;
         timeLeft = 10 * 60;
     } else {
         // Default (Focus)
@@ -594,6 +598,13 @@ function switchMode(mode) {
         titleDisplay.textContent = 'Focus';
         timeLeft = modes.focus * 60;
     }
+
+    // Toggle Task Section & History Button
+    // Show only for Focus category modes
+    const isFocusCategory = ['focus', 'short', 'long', 'flowtime'].includes(mode);
+    const taskSection = document.querySelector('.task-section');
+    if (taskSection) taskSection.classList.toggle('hidden', !isFocusCategory);
+    if (historyBtn) historyBtn.classList.toggle('hidden', !isFocusCategory);
 
     // Special handling for Multi-Timer persistence
     if (mode === 'multi') {
@@ -1087,9 +1098,34 @@ function pauseTimer() {
 function resetTimer() {
     pauseTimer();
     elapsedFlowtime = 0;
-    currentSessionDuration = currentMode === 'breath'
-        ? BREATH_SESSIONS[currentBreathSession].duration * 60
-        : modes[currentMode] * 60;
+
+    if (currentMode === 'breath') {
+        currentSessionDuration = BREATH_SESSIONS[currentBreathSession].duration * 60;
+    } else if (currentMode === 'grill') {
+        const activeBtn = document.querySelector('.steak-btn.active');
+        const mins = activeBtn ? parseInt(activeBtn.dataset.time) : 6;
+        currentSessionDuration = mins * 60;
+    } else if (currentMode === 'interval') {
+        currentSessionDuration = intervalWorkTime;
+        currentCycle = 1;
+        isIntervalRest = false;
+        startBtn.textContent = 'Start';
+    } else if (currentMode === 'grounding') {
+        currentSessionDuration = 5 * 60;
+        groundingStepIndex = -1;
+    } else if (currentMode === 'microbreak') {
+        currentSessionDuration = 60;
+    } else if (currentMode === 'stopwatch') {
+        currentSessionDuration = 0;
+    } else if (currentMode === 'multi') {
+        currentSessionDuration = 0;
+    } else if (currentMode === 'countdown') {
+        currentSessionDuration = 10 * 60; // Default
+    } else {
+        // Standard modes (focus, short, long) found in modes object
+        currentSessionDuration = (modes[currentMode] || 25) * 60;
+    }
+
     timeLeft = currentSessionDuration;
 
     // Reset breathing state
@@ -1705,7 +1741,7 @@ function renderTimerCards() {
                 <input type="text" class="timer-name" value="${timer.name}" onchange="updateTimerName(${timer.id}, this.value)">
                 <button class="timer-close-btn" onclick="deleteTimer(${timer.id})">✕</button>
             </div>
-            <div class="timer-digits">${formatTime(timer.timeLeft)}</div>
+            <div class="timer-digits" contenteditable="true" onblur="updateTimerDuration(${timer.id}, this.innerText)" onkeydown="handleTimerDurationKeydown(event, ${timer.id}, this)">${formatTime(timer.timeLeft)}</div>
             <div class="timer-card-controls">
                 <button class="card-btn ${timer.isRunning ? 'pause' : 'start'}" onclick="toggleMultiTimer(${timer.id})">
                     ${timer.isRunning ? 'Pause' : 'Start'}
@@ -1742,6 +1778,45 @@ function updateTimerName(id, newName) {
     if (timer) {
         timer.name = newName;
         saveMultiTimers();
+    }
+}
+
+function updateTimerDuration(id, timeString) {
+    const timer = multiTimers.find(t => t.id === id);
+    if (!timer) return;
+
+    // Parse time string (supports MM:SS or just MM)
+    let minutes = 0;
+    let seconds = 0;
+
+    if (timeString.includes(':')) {
+        const parts = timeString.split(':');
+        minutes = parseInt(parts[0]) || 0;
+        seconds = parseInt(parts[1]) || 0;
+    } else {
+        minutes = parseInt(timeString) || 0;
+    }
+
+    const newDuration = (minutes * 60) + seconds;
+
+    if (newDuration > 0) {
+        timer.duration = newDuration;
+        timer.totalDuration = newDuration;
+        // Only reset time left if we're not running to prevent accidental jumps? 
+        // Or if user edits, they probably want to set a new time.
+        // Let's reset timeLeft to newDuration.
+        timer.timeLeft = newDuration;
+        timer.isRunning = false; // Pause if changed
+    }
+
+    renderTimerCards();
+    saveMultiTimers();
+}
+
+function handleTimerDurationKeydown(e, id, el) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        el.blur();
     }
 }
 
