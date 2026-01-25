@@ -15,9 +15,12 @@ A beautiful, glassmorphism-styled timer application built with vanilla HTML, CSS
 
 ### 🧘 Health & Wellness
 - **Breathing Exercises**: Guided breathing sessions with dual-ring visualization and phase countdown (v1.13+).
-  - Micro-Reset (1 min): 2-1-4 breathing
-  - Standard Prep (3 mins): 6-10 deep slow breaths/min
-  - Deep Transition (5 mins): Full mental clearance
+  - **Micro-Reset** (1 min): 2-1-4 breathing.
+  - **Standard Prep** (3 mins): 5-5 breathing.
+  - **Deep Transition** (5 mins): 6-4-6 breathing.
+  - **Box Breathing**: 4-4-4-4 pattern for focus (v1.17+).
+  - **Relax (4-7-8)**: Anxiety reduction pattern (v1.17+).
+  - **Custom Pattern**: Fully configurable Inhale, Hold, Exhale, Hold Empty phases (v1.17+).
 - **Grounding (5-4-3-2-1)**: 5-minute guided sensory grounding exercise (v1.15+).
 - **Micro-Break**: Quick 1-minute rest timer (v1.15+).
 
@@ -31,7 +34,7 @@ A beautiful, glassmorphism-styled timer application built with vanilla HTML, CSS
 
 ### ⏱️ Utility Timers
 - **Countdown Timer**: General-purpose countdown for any duration.
-- **Deadline Timer**: Track time remaining until a specific deadline (coming soon).
+- **Deadline Timer**: Track time remaining until a specific date and time.
 
 ### 📊 Tracking & History
 - **History Log**: Tracks completed sessions with **Inline Editing** for titles, durations, and dates.
@@ -186,7 +189,7 @@ We have a comprehensive plan to evolve this tool into a productivity powerhouse.
     - [x] **Stopwatch**: Count-up timer for open-ended activities (v1.15+).
     - [x] **Grill Master**: Steak doneness presets with flip reminders (v1.15+).
     - [x] **Multi-Timer Dashboard**: Run multiple independent timers simultaneously. Now supports **Inline Editing** (click time to change) and distinct visual styles (v1.16+).
-    - [ ] **Deadline Timer**: Track time remaining until a specific deadline.
+    - [x] **Deadline Timer**: Track time remaining until a specific deadline.
 - **15. Distraction Management**
     - [ ] Website blocking integration
     - [ ] "Do Not Disturb" integration

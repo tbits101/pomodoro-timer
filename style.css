@@ -140,6 +140,19 @@ body {
     line-height: 1;
 }
 
+.deadline-display {
+    font-size: 3rem;
+    /* Smaller font for deadline to fit more text */
+    margin-bottom: 1.5rem;
+    word-break: break-word;
+    /* Wrap if extremely long */
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+
 .controls {
     display: flex;
     gap: 1.5rem;
@@ -471,7 +484,8 @@ body.flowtime-break .mode-btn.active {
         cy: 130;
     }
 
-    .mode-switcher {
+    .mode-switcher,
+    .breath-options {
         gap: 0.25rem;
         padding: 0.25rem;
         width: 100%;

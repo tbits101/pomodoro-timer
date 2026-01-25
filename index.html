@@ -116,6 +116,13 @@
                     <button class="mode-btn" data-mode="countdown">Countdown</button>
                     <button class="mode-btn" data-mode="deadline">Deadline</button>
                 </div>
+
+                <div id="deadline-options" class="sub-options hidden">
+                    <div class="option-group" style="width: 100%;">
+                        <label>Target Date & Time</label>
+                        <input type="datetime-local" id="deadline-input" class="select-input" style="width: 100%;">
+                    </div>
+                </div>
             </div>
 
             <div id="breath-options" class="breath-options hidden">
@@ -131,6 +138,50 @@
                     <span>Deep Transition</span>
                     <span class="duration-clue">6-4-6</span>
                 </button>
+                <button class="breath-session-btn" data-session="box">
+                    <span>Box</span>
+                    <span class="duration-clue">4-4-4-4</span>
+                </button>
+                <button class="breath-session-btn" data-session="relax">
+                    <span>Relax</span>
+                    <span class="duration-clue">4-7-8</span>
+                </button>
+                <button class="breath-session-btn" data-session="custom">
+                    <span>Custom</span>
+                    <span class="duration-clue">Edit</span>
+                </button>
+            </div>
+
+            <div id="custom-breath-config" class="sub-options hidden">
+                <div class="option-group">
+                    <label>Pattern (Seconds)</label>
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem;">
+                        <div>
+                            <label style="font-size: 0.6rem;">Inhale</label>
+                            <input type="number" id="custom-inhale" value="4" min="1" class="select-input"
+                                style="padding: 0.4rem;">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.6rem;">Hold</label>
+                            <input type="number" id="custom-hold" value="4" min="0" class="select-input"
+                                style="padding: 0.4rem;">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.6rem;">Exhale</label>
+                            <input type="number" id="custom-exhale" value="4" min="1" class="select-input"
+                                style="padding: 0.4rem;">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.6rem;">Hold (E)</label>
+                            <input type="number" id="custom-hold-empty" value="0" min="0" class="select-input"
+                                style="padding: 0.4rem;">
+                        </div>
+                    </div>
+                </div>
+                <div class="option-group">
+                    <label>Total Duration (Min)</label>
+                    <input type="number" id="custom-duration" value="5" min="1" max="60" class="select-input">
+                </div>
             </div>
 
             <div class="timer-container">

@@ -59,6 +59,27 @@ const BREATH_SESSIONS = {
             { type: 'Hold', duration: 4 },
             { type: 'Exhale', duration: 6 }
         ]
+    },
+    box: {
+        duration: 2,
+        phases: [
+            { type: 'Inhale', duration: 4 },
+            { type: 'Hold', duration: 4 },
+            { type: 'Exhale', duration: 4 },
+            { type: 'Hold', duration: 4, empty: true }
+        ]
+    },
+    relax: {
+        duration: 2,
+        phases: [
+            { type: 'Inhale', duration: 4 },
+            { type: 'Hold', duration: 7 },
+            { type: 'Exhale', duration: 8 }
+        ]
+    },
+    custom: {
+        duration: 5,
+        phases: [] // Populated dynamically
     }
 };
 
@@ -87,6 +108,9 @@ let flipReminderInterval = 120; // 2 minutes
 let isFlipReminderEnabled = false;
 let flipReminderTimer = null;
 let lastFlipTime = 0;
+
+// Deadline Timer State
+let deadlineTarget = null;
 
 // Multi-Timer State
 let multiTimers = []; // { id, name, duration, timeLeft, isRunning }
@@ -159,6 +183,14 @@ const groundingInstruction = document.getElementById('grounding-instruction');
 const phaseCountdown = document.getElementById('phase-countdown');
 const breathSessionBtns = document.querySelectorAll('.breath-session-btn');
 const sessionCounter = document.getElementById('session-counter');
+const customBreathConfig = document.getElementById('custom-breath-config');
+const customInputs = {
+    inhale: document.getElementById('custom-inhale'),
+    hold: document.getElementById('custom-hold'),
+    exhale: document.getElementById('custom-exhale'),
+    holdEmpty: document.getElementById('custom-hold-empty'),
+    duration: document.getElementById('custom-duration')
+};
 
 // Grill Elements
 const grillPresets = document.getElementById('grill-presets');
@@ -166,10 +198,13 @@ const steakBtns = document.querySelectorAll('.steak-btn');
 const flipToggle = document.getElementById('flip-reminder-toggle');
 
 // Sport Elements
-const intervalOptions = document.getElementById('interval-options');
 const intervalWorkInput = document.getElementById('interval-work-input');
 const intervalRestInput = document.getElementById('interval-rest-input');
 const intervalCyclesInput = document.getElementById('interval-cycles-input');
+
+// Deadline Elements
+const deadlineOptions = document.getElementById('deadline-options');
+const deadlineInput = document.getElementById('deadline-input');
 
 // Multi-Timer Elements
 const multiTimerDashboard = document.getElementById('multi-timer-dashboard');
@@ -246,6 +281,19 @@ function init() {
     inputs.theme.value = theme;
     applyTheme(theme);
 
+    // Load Deadline
+    const savedDeadline = localStorage.getItem('pomodoroDeadline');
+    if (savedDeadline) {
+        // We restore the target, but we don't auto-start the timer to avoid ringing immediately if expired
+        // Or maybe we just set the input value?
+        deadlineTarget = parseInt(savedDeadline);
+        // Convert timestamp to YYYY-MM-DDTHH:MM for input
+        const date = new Date(deadlineTarget);
+        // Adjust for timezone offset to show correct local time in input
+        const localIso = new Date(date.getTime() - (date.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+        if (deadlineInput) deadlineInput.value = localIso;
+    }
+
     // Set Version Display
     if (typeof APP_VERSION !== 'undefined' && typeof BUILD_TIME !== 'undefined') {
         const versionEl = document.getElementById('app-version');
@@ -274,7 +322,35 @@ function setProgress(percent, el = circle, circ = circumference) {
 
 function updateDisplay() {
     const displayTime = currentMode === 'flowtime' ? elapsedFlowtime : timeLeft;
-    timeDisplay.textContent = formatTime(displayTime);
+
+    // Handle Deadline Display
+    if (currentMode === 'deadline') {
+        timeDisplay.classList.add('deadline-display');
+        timeDisplay.classList.remove('timer-display');
+
+        if (deadlineTarget) {
+            const diff = deadlineTarget - Date.now();
+            if (diff > 0) {
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+                let text = '';
+                if (days > 0) text += `${days}d `;
+                text += `${hours}h ${minutes}m ${seconds}s`;
+                timeDisplay.textContent = text;
+            } else {
+                timeDisplay.textContent = "Time's up!";
+            }
+        } else {
+            timeDisplay.textContent = "--d --h --m --s";
+        }
+    } else {
+        timeDisplay.classList.remove('deadline-display');
+        timeDisplay.classList.add('timer-display');
+        timeDisplay.textContent = formatTime(displayTime);
+    }
 
     // Map submodes to user-friendly names
     const modeNameMap = {
@@ -524,11 +600,13 @@ function switchMode(mode) {
 
     // Hide specific option panels
     breathOptions.classList.add('hidden');
+    if (customBreathConfig) customBreathConfig.classList.add('hidden');
     breathInstruction.classList.add('hidden');
     groundingInstruction.classList.add('hidden');
     grillPresets.classList.add('hidden');
     intervalOptions.classList.add('hidden');
     multiTimerDashboard.classList.add('hidden');
+    deadlineOptions.classList.add('hidden');
     circle.classList.remove('breathing-ring');
 
     // Mode-specific initialization
@@ -538,6 +616,9 @@ function switchMode(mode) {
     } else if (mode === 'breath') {
         document.body.classList.add('breath-mode');
         breathOptions.classList.remove('hidden');
+        if (currentBreathSession === 'custom' && customBreathConfig) {
+            customBreathConfig.classList.remove('hidden');
+        }
         timeLeft = BREATH_SESSIONS[currentBreathSession].duration * 60;
         titleDisplay.textContent = 'Breathing';
     } else if (mode === 'grounding') {
@@ -592,6 +673,12 @@ function switchMode(mode) {
         titleDisplay.textContent = 'Timer';
         timeLeft = 10 * 60;
         timeLeft = 10 * 60;
+    } else if (mode === 'deadline') {
+        document.body.classList.add('utility-mode'); // Re-use utility styling if exists, or fallback
+        deadlineOptions.classList.remove('hidden');
+        titleDisplay.textContent = 'Deadline Timer';
+        timeLeft = 0; // Not used for display directly
+        updateDisplay(); // Force update to show placeholder
     } else {
         // Default (Focus)
         document.body.classList.add('focus-mode');
@@ -948,6 +1035,25 @@ function startTimer() {
         isRunning = true;
         startBtn.textContent = currentMode === 'flowtime' ? 'Stop & Break' : 'Pause';
 
+        // Initialize Deadline
+        if (currentMode === 'deadline') {
+            if (!deadlineInput.value) {
+                alert('Please select a target date and time.');
+                isRunning = false;
+                startBtn.textContent = 'Start';
+                return;
+            }
+            const target = new Date(deadlineInput.value).getTime();
+            if (target <= Date.now()) {
+                alert('Please select a future time.');
+                isRunning = false;
+                startBtn.textContent = 'Start';
+                return;
+            }
+            deadlineTarget = target;
+            localStorage.setItem('pomodoroDeadline', deadlineTarget);
+        }
+
         timerId = setInterval(() => {
             if (currentMode === 'flowtime') {
                 elapsedFlowtime++;
@@ -956,6 +1062,10 @@ function startTimer() {
             } else {
                 if (currentMode === 'stopwatch') {
                     timeLeft++;
+                } else if (currentMode === 'deadline') {
+                    // Deadline only needs display update, but we check expiry
+                    const diff = deadlineTarget - Date.now();
+                    timeLeft = Math.floor(diff / 1000); // Sync timeLeft for completion check logic below
                 } else {
                     timeLeft--;
                 }
@@ -1100,6 +1210,9 @@ function resetTimer() {
     elapsedFlowtime = 0;
 
     if (currentMode === 'breath') {
+        if (currentBreathSession === 'custom') {
+            updateCustomBreathParams(); // Ensure params are fresh
+        }
         currentSessionDuration = BREATH_SESSIONS[currentBreathSession].duration * 60;
     } else if (currentMode === 'grill') {
         const activeBtn = document.querySelector('.steak-btn.active');
@@ -1121,6 +1234,10 @@ function resetTimer() {
         currentSessionDuration = 0;
     } else if (currentMode === 'countdown') {
         currentSessionDuration = 10 * 60; // Default
+    } else if (currentMode === 'deadline') {
+        currentSessionDuration = 0;
+        // Don't clear deadlineTarget here so users can restart same deadline if they want? 
+        // Or maybe we should? Let's keep it.
     } else {
         // Standard modes (focus, short, long) found in modes object
         currentSessionDuration = (modes[currentMode] || 25) * 60;
@@ -1181,7 +1298,12 @@ function handleBreathingTick() {
     } else if (currentPhase.type === 'Exhale') {
         setProgress(100 - phasePercent, phaseCircle, phaseCircumference); // Contracting
     } else if (currentPhase.type === 'Hold') {
-        setProgress(100, phaseCircle, phaseCircumference); // Stay full during hold
+        if (currentPhase.empty) {
+            setProgress(0, phaseCircle, phaseCircumference); // Empty ring
+            breathInstruction.textContent = 'Hold (Empty)';
+        } else {
+            setProgress(100, phaseCircle, phaseCircumference); // Full ring
+        }
     }
 }
 
@@ -1541,7 +1663,45 @@ breathSessionBtns.forEach(btn => {
         currentBreathSession = btn.dataset.session;
         breathSessionBtns.forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
+
+        if (currentBreathSession === 'custom') {
+            customBreathConfig.classList.remove('hidden');
+        } else {
+            customBreathConfig.classList.add('hidden');
+        }
         resetTimer();
+    });
+});
+
+function updateCustomBreathParams() {
+    const inhale = parseInt(customInputs.inhale.value) || 4;
+    const hold = parseInt(customInputs.hold.value) || 0;
+    const exhale = parseInt(customInputs.exhale.value) || 4;
+    const holdEmpty = parseInt(customInputs.holdEmpty.value) || 0;
+    const duration = parseInt(customInputs.duration.value) || 5;
+
+    BREATH_SESSIONS.custom.duration = duration;
+    BREATH_SESSIONS.custom.phases = [];
+
+    if (inhale > 0) BREATH_SESSIONS.custom.phases.push({ type: 'Inhale', duration: inhale });
+    if (hold > 0) BREATH_SESSIONS.custom.phases.push({ type: 'Hold', duration: hold });
+    if (exhale > 0) BREATH_SESSIONS.custom.phases.push({ type: 'Exhale', duration: exhale });
+    if (holdEmpty > 0) BREATH_SESSIONS.custom.phases.push({ type: 'Hold', duration: holdEmpty, empty: true });
+
+    // Fallback if empty
+    if (BREATH_SESSIONS.custom.phases.length === 0) {
+        BREATH_SESSIONS.custom.phases.push({ type: 'Inhale', duration: 4 });
+        BREATH_SESSIONS.custom.phases.push({ type: 'Exhale', duration: 4 });
+    }
+}
+
+// Add listeners to custom inputs to live-update if paused (or restart?)
+// For simplicity, update on next reset or start. But let's add listeners to reset if they change while paused.
+Object.values(customInputs).forEach(input => {
+    input.addEventListener('change', () => {
+        if (currentMode === 'breath' && currentBreathSession === 'custom') {
+            resetTimer();
+        }
     });
 });
 
