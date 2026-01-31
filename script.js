@@ -125,6 +125,8 @@ const categoryBtns = document.querySelectorAll('.category-btn');
 const submodeSwitchers = document.querySelectorAll('.mode-switcher');
 const modeBtns = document.querySelectorAll('.mode-btn');
 const titleDisplay = document.querySelector('.title');
+const timerContainer = document.querySelector('.timer-container');
+const mainControls = document.querySelector('.controls');
 
 // Progress Ring Elements
 const circle = document.querySelector('.progress-ring__circle');
@@ -198,6 +200,7 @@ const steakBtns = document.querySelectorAll('.steak-btn');
 const flipToggle = document.getElementById('flip-reminder-toggle');
 
 // Sport Elements
+const intervalOptions = document.getElementById('interval-options');
 const intervalWorkInput = document.getElementById('interval-work-input');
 const intervalRestInput = document.getElementById('interval-rest-input');
 const intervalCyclesInput = document.getElementById('interval-cycles-input');
@@ -609,6 +612,10 @@ function switchMode(mode) {
     deadlineOptions.classList.add('hidden');
     circle.classList.remove('breathing-ring');
 
+    // Default: Show Main Timer & Controls (Using inline style to force override)
+    if (timerContainer) timerContainer.style.display = '';
+    if (mainControls) mainControls.style.display = '';
+
     // Mode-specific initialization
     if (mode === 'flowtime') {
         document.body.classList.add('flowtime-mode');
@@ -666,6 +673,8 @@ function switchMode(mode) {
     } else if (mode === 'multi') {
         document.body.classList.add('multi-mode');
         multiTimerDashboard.classList.remove('hidden');
+        if (timerContainer) timerContainer.style.display = 'none';
+        if (mainControls) mainControls.style.display = 'none';
         titleDisplay.textContent = 'Kitchen';
         timeLeft = 0;
     } else if (mode === 'countdown') {
