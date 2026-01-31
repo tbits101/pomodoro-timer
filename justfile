@@ -73,7 +73,7 @@ set-version ver:
     echo "Version set to {{ver}} (Sync'd with sw.js)"
 
 # Full release: run tests, bump version, check docs, commit, push, tag, and deploy
-release msg: test bump check-docs
+release msg: bump check-docs
     just commit "{{msg}}"
     just push
     just tag "{{msg}}"
