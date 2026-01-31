@@ -140,6 +140,23 @@ body {
     line-height: 1;
 }
 
+.timer-display.overtime {
+    color: #ff5252;
+    animation: blink-soft 2s infinite;
+}
+
+@keyframes blink-soft {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.8;
+    }
+}
+
 .deadline-display {
     font-size: 3rem;
     /* Smaller font for deadline to fit more text */
@@ -800,6 +817,84 @@ body.light-theme.short-break .primary {
     background: #11998e;
     color: white;
 }
+
+/* Family Category */
+body.family-category {
+    --bg-gradient-1: #6a11cb;
+    --bg-gradient-2: #2575fc;
+    --accent: #a1c4fd;
+}
+
+body.family-category .primary {
+    color: #6a11cb;
+}
+
+body.light-theme.family-category .primary {
+    background: #6a11cb;
+    color: white;
+}
+
+body.family-category .mode-btn.active {
+    color: #6a11cb;
+}
+
+.children-list {
+    list-style: none;
+    margin-top: 0.5rem;
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+.child-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 0.4rem 0.8rem;
+    border-radius: 8px;
+    margin-bottom: 0.3rem;
+    font-size: 0.9rem;
+}
+
+.child-item.active-turn {
+    background: var(--accent);
+    color: #1e1b4b;
+    font-weight: 600;
+}
+
+.remove-child-btn {
+    background: none;
+    border: none;
+    color: white;
+    opacity: 0.5;
+    cursor: pointer;
+    font-size: 0.8rem;
+}
+
+.remove-child-btn:hover {
+    opacity: 1;
+}
+
+.active-child-display {
+    margin-bottom: 0.5rem;
+    animation: fadeIn 0.3s ease;
+}
+
+.next-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    opacity: 0.7;
+    display: block;
+}
+
+.child-name-text {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--accent);
+}
+
+
 
 body.short-break .mode-btn.active {
     color: #11998e;

@@ -116,9 +116,18 @@ let deadlineTarget = null;
 let multiTimers = []; // { id, name, duration, timeLeft, isRunning }
 let multiTimerIntervalId = null;
 
+// Turns State
+let turnsNames = [];
+let currentTurnIndex = 0;
+let autoAdvanceTurns = false;
+let autoStartTurns = false;
+let turnDuration = 10; // Default 10 mins
+let isOvertime = false;
+
 // DOM Elements
 const timeDisplay = document.getElementById('time-display');
 const startBtn = document.getElementById('start-btn');
+const nextTurnBtn = document.getElementById('next-turn-btn');
 const resetBtn = document.getElementById('reset-btn');
 const alarmSound = document.getElementById('alarm-sound');
 const categoryBtns = document.querySelectorAll('.category-btn');
@@ -215,6 +224,17 @@ const timerGrid = document.getElementById('timer-grid');
 const addTimerBtn = document.getElementById('add-timer-btn');
 const presetTimeBtns = document.querySelectorAll('.preset-time-btn');
 
+// Turns Elements
+const turnsOptions = document.getElementById('turns-options');
+const childNameInput = document.getElementById('child-name-input');
+const addChildBtn = document.getElementById('add-child-btn');
+const childrenList = document.getElementById('children-list');
+const turnDurationInput = document.getElementById('turn-duration-input');
+const autoAdvanceTurnsToggle = document.getElementById('auto-advance-turns-toggle');
+const autoStartTurnsToggle = document.getElementById('auto-start-turns-toggle');
+const activeChildDisplay = document.getElementById('active-child-display');
+const activeChildName = document.getElementById('active-child-name');
+
 // --- Initialization ---
 
 function init() {
@@ -297,6 +317,22 @@ function init() {
         if (deadlineInput) deadlineInput.value = localIso;
     }
 
+    // Load Turns Config
+    const savedTurns = localStorage.getItem('pomodoroTurns');
+    if (savedTurns) {
+        const turnsData = JSON.parse(savedTurns);
+        turnsNames = turnsData.names || [];
+        currentTurnIndex = turnsData.currentIndex || 0;
+        autoAdvanceTurns = turnsData.autoAdvance || false;
+        autoStartTurns = turnsData.autoStart || false;
+        turnDuration = turnsData.duration || 10;
+
+        if (turnDurationInput) turnDurationInput.value = turnDuration;
+        if (autoAdvanceTurnsToggle) autoAdvanceTurnsToggle.checked = autoAdvanceTurns;
+        if (autoStartTurnsToggle) autoStartTurnsToggle.checked = autoStartTurns;
+        renderChildrenList();
+    }
+
     // Set Version Display
     if (typeof APP_VERSION !== 'undefined' && typeof BUILD_TIME !== 'undefined') {
         const versionEl = document.getElementById('app-version');
@@ -305,6 +341,78 @@ function init() {
 
     // Set initial timer
     switchCategory('focus');
+
+    if (nextTurnBtn) nextTurnBtn.onclick = () => nextTurn(true);
+
+    // Turns event listeners
+    if (addChildBtn) addChildBtn.addEventListener('click', () => {
+        const name = childNameInput.value.trim();
+        if (name) {
+            turnsNames.push(name);
+            childNameInput.value = '';
+            saveTurnsConfig();
+            renderChildrenList();
+        }
+    });
+
+    if (turnDurationInput) turnDurationInput.addEventListener('change', () => {
+        turnDuration = parseInt(turnDurationInput.value) || 10;
+        saveTurnsConfig();
+        if (!isRunning && currentMode === 'turns') {
+            resetTimer();
+        }
+    });
+
+    if (autoAdvanceTurnsToggle) autoAdvanceTurnsToggle.addEventListener('change', () => {
+        autoAdvanceTurns = autoAdvanceTurnsToggle.checked;
+        saveTurnsConfig();
+    });
+
+    if (autoStartTurnsToggle) autoStartTurnsToggle.addEventListener('change', () => {
+        autoStartTurns = autoStartTurnsToggle.checked;
+        saveTurnsConfig();
+    });
+}
+
+function saveTurnsConfig() {
+    localStorage.setItem('pomodoroTurns', JSON.stringify({
+        names: turnsNames,
+        currentIndex: currentTurnIndex,
+        autoAdvance: autoAdvanceTurns,
+        autoStart: autoStartTurns,
+        duration: turnDuration
+    }));
+}
+
+function renderChildrenList() {
+    if (!childrenList) return;
+    childrenList.innerHTML = '';
+    turnsNames.forEach((name, index) => {
+        const li = document.createElement('li');
+        li.className = 'child-item';
+        if (index === currentTurnIndex && currentMode === 'turns') {
+            li.classList.add('active-turn');
+        }
+        li.innerHTML = `
+            <span>${name}</span>
+            <button class="remove-child-btn" data-index="${index}">✕</button>
+        `;
+        childrenList.appendChild(li);
+    });
+
+    // Handle delete
+    childrenList.querySelectorAll('.remove-child-btn').forEach(btn => {
+        btn.onclick = (e) => {
+            const idx = parseInt(btn.dataset.index);
+            turnsNames.splice(idx, 1);
+            if (currentTurnIndex >= turnsNames.length) {
+                currentTurnIndex = Math.max(0, turnsNames.length - 1);
+            }
+            saveTurnsConfig();
+            renderChildrenList();
+            if (currentMode === 'turns') updateDisplay();
+        };
+    });
 }
 
 // --- Helpers ---
@@ -372,12 +480,28 @@ function updateDisplay() {
     };
 
     const modeName = modeNameMap[currentMode] || 'Timer';
-    const taskPart = currentTaskText.textContent ? `[${currentTaskText.textContent}] ` : '';
+
+    let taskPart = currentTaskText.textContent ? `[${currentTaskText.textContent}] ` : '';
+    // Special task part for Turns mode
+    if (currentMode === 'turns' && turnsNames.length > 0) {
+        taskPart = `[${turnsNames[currentTurnIndex]}] `;
+    }
+
     document.title = `${formatTime(displayTime)} - ${taskPart}${modeName}`;
 
     // Update Ring
     if (currentMode === 'flowtime') {
         circle.style.strokeDashoffset = 0;
+    } else if (currentMode === 'turns') {
+        if (isOvertime) {
+            circle.style.strokeDashoffset = 0; // Full ring during overtime
+            timeDisplay.classList.add('overtime');
+            timeDisplay.textContent = `+${formatTime(timeLeft)}`;
+        } else {
+            timeDisplay.classList.remove('overtime');
+            const percent = (timeLeft / currentSessionDuration) * 100;
+            setProgress(percent, circle, circumference);
+        }
     } else if (currentMode === 'breath') {
         const percent = (timeLeft / currentSessionDuration) * 100;
         setProgress(percent, circle, circumference);
@@ -396,6 +520,16 @@ function updateDisplay() {
     } else if (currentMode === 'interval') {
         sessionCounter.textContent = `Cycle ${currentCycle}/${totalIntervalCycles} - ${isIntervalRest ? 'REST' : 'WORK'}`;
         sessionCounter.classList.remove('hidden');
+    } else if (currentMode === 'turns') {
+        if (turnsNames.length > 0) {
+            activeChildDisplay.classList.remove('hidden');
+            activeChildName.textContent = turnsNames[currentTurnIndex];
+            sessionCounter.textContent = `Turn ${currentTurnIndex + 1} of ${turnsNames.length}`;
+            sessionCounter.classList.remove('hidden');
+        } else {
+            activeChildDisplay.classList.add('hidden');
+            sessionCounter.classList.add('hidden');
+        }
     } else {
         sessionCounter.classList.add('hidden');
     }
@@ -504,6 +638,23 @@ function handleGroundingTick() {
     groundingInstruction.textContent = `Focus on ${step.count} ${step.prompt}`;
 }
 
+function nextTurn(manual = false) {
+    if (turnsNames.length === 0) return;
+
+    // If it's a manual click, we probably want to startBob if Alice was already running
+    // If it's an auto-advance, we check autoStartTurns.
+    const shouldStart = manual ? isRunning : autoStartTurns;
+
+    currentTurnIndex = (currentTurnIndex + 1) % turnsNames.length;
+    saveTurnsConfig();
+    renderChildrenList();
+    resetTimer(); // Stops the timer and resets isOvertime
+
+    if (shouldStart) {
+        startTimer();
+    }
+}
+
 function handleIntervalTick() {
     if (!isRunning) return;
 
@@ -560,7 +711,7 @@ function switchCategory(category) {
     });
 
     // Reset Body Classes for Categories
-    document.body.classList.remove('focus-category', 'health-category', 'sport-category', 'kitchen-category', 'utility-category');
+    document.body.classList.remove('focus-category', 'health-category', 'sport-category', 'kitchen-category', 'utility-category', 'family-category');
     document.body.classList.add(`${category}-category`);
 
     // Switch to first submode in category
@@ -577,7 +728,8 @@ function switchMode(mode) {
         breath: 'health', grounding: 'health', microbreak: 'health',
         interval: 'sport', stopwatch: 'sport',
         multi: 'kitchen', grill: 'kitchen',
-        countdown: 'utility', deadline: 'utility'
+        countdown: 'utility', deadline: 'utility',
+        turns: 'family'
     };
 
     const targetCategory = modeToCategory[mode];
@@ -599,7 +751,7 @@ function switchMode(mode) {
     });
 
     // Manage mode classes without overwriting theme classes
-    document.body.classList.remove('focus-mode', 'short-break', 'long-break', 'flowtime-mode', 'breath-mode', 'grounding-mode', 'microbreak-mode', 'interval-mode', 'stopwatch-mode', 'multi-mode', 'countdown-mode', 'deadline-mode');
+    document.body.classList.remove('focus-mode', 'short-break', 'long-break', 'flowtime-mode', 'breath-mode', 'grounding-mode', 'microbreak-mode', 'interval-mode', 'stopwatch-mode', 'multi-mode', 'countdown-mode', 'deadline-mode', 'turns-mode');
 
     // Hide specific option panels
     breathOptions.classList.add('hidden');
@@ -610,6 +762,9 @@ function switchMode(mode) {
     intervalOptions.classList.add('hidden');
     multiTimerDashboard.classList.add('hidden');
     deadlineOptions.classList.add('hidden');
+    turnsOptions.classList.add('hidden');
+    activeChildDisplay.classList.add('hidden');
+    if (nextTurnBtn) nextTurnBtn.classList.add('hidden');
     circle.classList.remove('breathing-ring');
 
     // Default: Show Main Timer & Controls (Using inline style to force override)
@@ -688,18 +843,26 @@ function switchMode(mode) {
         titleDisplay.textContent = 'Deadline Timer';
         timeLeft = 0; // Not used for display directly
         updateDisplay(); // Force update to show placeholder
+    } else if (mode === 'turns') {
+        document.body.classList.add('turns-mode');
+        turnsOptions.classList.remove('hidden');
+        titleDisplay.textContent = 'Sharing Turns';
+        timeLeft = turnDuration * 60;
+        currentSessionDuration = timeLeft;
+        if (nextTurnBtn) nextTurnBtn.classList.remove('hidden');
     } else {
         // Default (Focus)
         document.body.classList.add('focus-mode');
         titleDisplay.textContent = 'Focus';
         timeLeft = modes.focus * 60;
+        if (nextTurnBtn) nextTurnBtn.classList.add('hidden');
     }
 
     // Toggle Task Section & History Button
     // Show only for Focus category modes
     const isFocusCategory = ['focus', 'short', 'long', 'flowtime'].includes(mode);
     const taskSection = document.querySelector('.task-section');
-    if (taskSection) taskSection.classList.toggle('hidden', !isFocusCategory);
+    if (taskSection) taskSection.classList.toggle('hidden', !isFocusCategory && mode !== 'turns'); // Keep turns session visible if we want? Actually user didn't ask for task integration but it doesn't hurt.
     if (historyBtn) historyBtn.classList.toggle('hidden', !isFocusCategory);
 
     // Special handling for Multi-Timer persistence
@@ -1075,6 +1238,24 @@ function startTimer() {
                     // Deadline only needs display update, but we check expiry
                     const diff = deadlineTarget - Date.now();
                     timeLeft = Math.floor(diff / 1000); // Sync timeLeft for completion check logic below
+                } else if (currentMode === 'turns') {
+                    if (isOvertime) {
+                        timeLeft++;
+                    } else {
+                        timeLeft--;
+                        if (timeLeft <= 0) {
+                            if (soundEnabled) alarmSound.play().catch(e => console.log('Audio error', e));
+                            showNotification();
+
+                            if (autoAdvanceTurns) {
+                                nextTurn(); // will use autoStartTurns internally
+                                return;
+                            } else {
+                                isOvertime = true;
+                                timeLeft = 0; // Start counting up from 0
+                            }
+                        }
+                    }
                 } else {
                     timeLeft--;
                 }
@@ -1086,7 +1267,7 @@ function startTimer() {
 
             updateDisplay();
 
-            if (currentMode !== 'flowtime' && currentMode !== 'stopwatch' && timeLeft <= 0) {
+            if (currentMode !== 'flowtime' && currentMode !== 'stopwatch' && currentMode !== 'turns' && timeLeft <= 0) {
                 clearInterval(timerId);
                 isRunning = false;
                 startBtn.textContent = 'Start';
@@ -1247,6 +1428,10 @@ function resetTimer() {
         currentSessionDuration = 0;
         // Don't clear deadlineTarget here so users can restart same deadline if they want? 
         // Or maybe we should? Let's keep it.
+    } else if (currentMode === 'turns') {
+        currentSessionDuration = turnDuration * 60;
+        isOvertime = false;
+        timeDisplay.classList.remove('overtime');
     } else {
         // Standard modes (focus, short, long) found in modes object
         currentSessionDuration = (modes[currentMode] || 25) * 60;

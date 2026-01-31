@@ -36,6 +36,7 @@ A beautiful, glassmorphism-styled timer application built with vanilla HTML, CSS
 ### ⏱️ Utility Timers
 - **Countdown Timer**: General-purpose countdown for any duration.
 - **Deadline Timer**: Track time remaining until a specific date and time.
+- **Sharing Turns**: Manage turn-based sharing for children with name displays, overtime counting, and auto-advance options (v1.16+).
 
 ### 📊 Tracking & History
 - **History Log**: Tracks completed sessions with **Inline Editing** for titles, durations, and dates.
@@ -191,6 +192,7 @@ We have a comprehensive plan to evolve this tool into a productivity powerhouse.
     - [x] **Grill Master**: Steak doneness presets with flip reminders (v1.15+).
     - [x] **Multi-Timer Dashboard**: Run multiple independent timers simultaneously. Now supports **Inline Editing** (click time to change) and distinct visual styles (v1.16+).
     - [x] **Deadline Timer**: Track time remaining until a specific deadline.
+    - [x] **Sharing Turns (Children)**: Turn-based timer for items, featuring name display, overtime counting, and configurable auto-transition (v1.16+).
 - **15. Distraction Management**
     - [ ] Website blocking integration
     - [ ] "Do Not Disturb" integration
