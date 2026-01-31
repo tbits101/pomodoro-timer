@@ -10,6 +10,10 @@ serve:
 status:
     git status
 
+# Run automated tests
+test:
+    npx playwright test
+
 # Check if README.md has been modified compared to origin/main
 check-docs:
     @if git diff --quiet origin/main -- README.md; then \
@@ -68,8 +72,8 @@ set-version ver:
     sed -i "s/CACHE_NAME = 'pomodoro-v.*'/CACHE_NAME = 'pomodoro-v{{ver}}'/" sw.js; \
     echo "Version set to {{ver}} (Sync'd with sw.js)"
 
-# Full release: bump version, check docs, commit, push, tag, and deploy
-release msg: bump check-docs
+# Full release: run tests, bump version, check docs, commit, push, tag, and deploy
+release msg: test bump check-docs
     just commit "{{msg}}"
     just push
     just tag "{{msg}}"

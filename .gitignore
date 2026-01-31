@@ -1,0 +1,12 @@
+# Dependencies
+node_modules/
+
+# Test reports and results
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+
+# OS generated files
+.DS_Store
+Thumbs.db

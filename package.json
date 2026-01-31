@@ -1,0 +1,25 @@
+{
+  "name": "pomodoro",
+  "version": "1.0.0",
+  "description": "A beautiful, glassmorphism-styled timer application built with vanilla HTML, CSS, and JavaScript. Originally a Pomodoro timer, now evolved into a versatile timing tool for productivity, health, sports, and kitchen tasks.",
+  "main": "script.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tbits101/pomodoro-timer.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/tbits101/pomodoro-timer/issues"
+  },
+  "homepage": "https://github.com/tbits101/pomodoro-timer#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.58.1",
+    "@types/node": "^25.1.0"
+  }
+}
