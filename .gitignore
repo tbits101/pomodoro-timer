@@ -7,6 +7,8 @@ playwright-report/
 blob-report/
 playwright/.cache/
 
-# OS generated files
-.DS_Store
-Thumbs.db
+# Capacitor
+www/
+android/
+capacitor.config.json
+node_modules/

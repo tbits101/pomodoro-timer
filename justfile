@@ -72,9 +72,25 @@ set-version ver:
     sed -i "s/CACHE_NAME = 'pomodoro-v.*'/CACHE_NAME = 'pomodoro-v{{ver}}'/" sw.js; \
     echo "Version set to {{ver}} (Sync'd with sw.js)"
 
+
 # Full release: run tests, bump version, check docs, commit, push, tag, and deploy
 release msg: bump check-docs
     just commit "{{msg}}"
     just push
     just tag "{{msg}}"
     just deploy
+
+# --- Android specific commands ---
+
+# Initialize the 'www' folder with current assets
+android-prep:
+    @mkdir -p www
+    cp index.html style.css script.js sw.js manifest.json version.js favicon.png icon-192.png icon-512.png www/
+
+# Sync web assets to the Android project
+android-sync: android-prep
+    npx cap sync android
+
+# Open the Android project in Android Studio
+android-open: android-sync
+    npx cap open android
