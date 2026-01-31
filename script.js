@@ -14,6 +14,8 @@ let timeLeft = modes[currentMode] * 60;
 let timerId = null;
 let isRunning = false;
 let currentSessionDuration = modes[currentMode] * 60;
+let expectedEndTime = null;
+let expectedStartTime = null;
 
 const DEFAULT_GOALS = {
     daily: 4,
@@ -85,6 +87,7 @@ const BREATH_SESSIONS = {
 
 let currentBreathSession = 'micro';
 let breathTimeInPhase = 0;
+let breathPhaseStartTime = null;
 
 // Sport Interval State
 let intervalWorkTime = 40;
@@ -660,11 +663,13 @@ function handleIntervalTick() {
 
     if (timeLeft <= 0) {
         // Switch between Work and Rest
+        const now = Date.now();
         if (!isIntervalRest) {
             // End of Work
             isIntervalRest = true;
             timeLeft = intervalRestTime;
             currentSessionDuration = intervalRestTime;
+            expectedEndTime = now + (timeLeft * 1000);
             if (soundEnabled) alarmSound.play().catch(e => console.log('Audio error', e));
         } else {
             // End of Rest
@@ -676,6 +681,7 @@ function handleIntervalTick() {
                 clearInterval(timerId);
                 isRunning = false;
                 startBtn.textContent = 'Start';
+                expectedEndTime = null;
                 if (soundEnabled) alarmSound.play().catch(e => console.log('Audio error', e));
                 showNotification();
                 setTimeout(() => switchCategory('focus'), 2000);
@@ -684,6 +690,7 @@ function handleIntervalTick() {
 
             timeLeft = intervalWorkTime;
             currentSessionDuration = intervalWorkTime;
+            expectedEndTime = now + (timeLeft * 1000);
             if (soundEnabled) alarmSound.play().catch(e => console.log('Audio error', e));
         }
     }
@@ -1207,6 +1214,21 @@ function startTimer() {
         isRunning = true;
         startBtn.textContent = currentMode === 'flowtime' ? 'Stop & Break' : 'Pause';
 
+        // Set target/start times
+        const now = Date.now();
+        if (currentMode === 'flowtime') {
+            expectedStartTime = now - (elapsedFlowtime * 1000);
+        } else if (currentMode === 'stopwatch') {
+            expectedStartTime = now - (timeLeft * 1000);
+        } else if (currentMode === 'deadline') {
+            // Already handled in deadlineTarget
+        } else if (currentMode === 'turns' && isOvertime) {
+            expectedStartTime = now - (timeLeft * 1000);
+        } else {
+            // All countdowns
+            expectedEndTime = now + (timeLeft * 1000);
+        }
+
         // Initialize Deadline
         if (currentMode === 'deadline') {
             if (!deadlineInput.value) {
@@ -1216,7 +1238,7 @@ function startTimer() {
                 return;
             }
             const target = new Date(deadlineInput.value).getTime();
-            if (target <= Date.now()) {
+            if (target <= now) {
                 alert('Please select a future time.');
                 isRunning = false;
                 startBtn.textContent = 'Start';
@@ -1227,22 +1249,23 @@ function startTimer() {
         }
 
         timerId = setInterval(() => {
+            const currentTime = Date.now();
             if (currentMode === 'flowtime') {
-                elapsedFlowtime++;
+                elapsedFlowtime = Math.floor((currentTime - expectedStartTime) / 1000);
             } else if (currentMode === 'breath') {
                 handleBreathingTick();
             } else {
                 if (currentMode === 'stopwatch') {
-                    timeLeft++;
+                    timeLeft = Math.floor((currentTime - expectedStartTime) / 1000);
                 } else if (currentMode === 'deadline') {
                     // Deadline only needs display update, but we check expiry
-                    const diff = deadlineTarget - Date.now();
+                    const diff = deadlineTarget - currentTime;
                     timeLeft = Math.floor(diff / 1000); // Sync timeLeft for completion check logic below
                 } else if (currentMode === 'turns') {
                     if (isOvertime) {
-                        timeLeft++;
+                        timeLeft = Math.floor((currentTime - expectedStartTime) / 1000);
                     } else {
-                        timeLeft--;
+                        timeLeft = Math.ceil((expectedEndTime - currentTime) / 1000);
                         if (timeLeft <= 0) {
                             if (soundEnabled) alarmSound.play().catch(e => console.log('Audio error', e));
                             showNotification();
@@ -1253,11 +1276,12 @@ function startTimer() {
                             } else {
                                 isOvertime = true;
                                 timeLeft = 0; // Start counting up from 0
+                                expectedStartTime = currentTime;
                             }
                         }
                     }
                 } else {
-                    timeLeft--;
+                    timeLeft = Math.ceil((expectedEndTime - currentTime) / 1000);
                 }
 
                 if (currentMode === 'grill') handleFlipReminder();
@@ -1385,6 +1409,9 @@ function pauseTimer() {
     clearInterval(timerId);
     isRunning = false;
     startBtn.textContent = 'Start';
+    expectedEndTime = null;
+    expectedStartTime = null;
+    breathPhaseStartTime = null;
 
     // Track interruption
     if (currentMode === 'focus' || currentMode === 'flowtime') {
@@ -1452,6 +1479,9 @@ function resetTimer() {
     sessionInterruptions = 0;
     sessionPausedTime = 0;
     pauseStartTime = null;
+    expectedEndTime = null;
+    expectedStartTime = null;
+    breathPhaseStartTime = null;
 
     // Reset ring to full
     circle.style.strokeDashoffset = 0;
@@ -1463,16 +1493,26 @@ function resetTimer() {
 }
 
 function handleBreathingTick() {
-    timeLeft--;
-    breathTimeInPhase++;
+    const now = Date.now();
+
+    // Total session timeLeft calculation
+    timeLeft = Math.ceil((expectedEndTime - now) / 1000);
 
     const session = BREATH_SESSIONS[currentBreathSession];
     let currentPhase = session.phases[breathPhaseIndex];
 
+    if (!breathPhaseStartTime) {
+        breathPhaseStartTime = now - (breathTimeInPhase * 1000);
+    }
+
+    // Phase progress calculation
+    breathTimeInPhase = Math.floor((now - breathPhaseStartTime) / 1000);
+
     if (breathTimeInPhase >= currentPhase.duration) {
         breathPhaseIndex = (breathPhaseIndex + 1) % session.phases.length;
         breathTimeInPhase = 0;
-        currentPhase = session.phases[breathPhaseIndex]; // Fixed bug below
+        breathPhaseStartTime = now;
+        currentPhase = session.phases[breathPhaseIndex];
     }
     // Re-calculating after potential index change
     currentPhase = session.phases[breathPhaseIndex];
@@ -2007,7 +2047,8 @@ function createTimer(duration, name = 'Timer') {
         duration,
         timeLeft: duration,
         isRunning: false,
-        totalDuration: duration
+        totalDuration: duration,
+        expectedEndTime: null
     };
     multiTimers.push(timer);
     renderTimerCards();
@@ -2024,6 +2065,7 @@ function toggleMultiTimer(id) {
     const timer = multiTimers.find(t => t.id === id);
     if (timer) {
         timer.isRunning = !timer.isRunning;
+        timer.expectedEndTime = null;
         renderTimerCards();
         checkMultiTimerLoop();
     }
@@ -2034,6 +2076,7 @@ function resetMultiTimer(id) {
     if (timer) {
         timer.isRunning = false;
         timer.timeLeft = timer.totalDuration;
+        timer.expectedEndTime = null;
         renderTimerCards();
         checkMultiTimerLoop();
     }
@@ -2043,21 +2086,27 @@ function startMultiTimerLoop() {
     if (multiTimerIntervalId) return;
     multiTimerIntervalId = setInterval(() => {
         let activeTimers = 0;
+        const now = Date.now();
         multiTimers.forEach(timer => {
             if (timer.isRunning && timer.timeLeft > 0) {
-                timer.timeLeft--;
+                if (!timer.expectedEndTime) {
+                    timer.expectedEndTime = now + (timer.timeLeft * 1000);
+                }
+                timer.timeLeft = Math.ceil((timer.expectedEndTime - now) / 1000);
                 activeTimers++;
                 if (timer.timeLeft <= 0) {
                     timer.isRunning = false;
                     timer.timeLeft = 0;
+                    timer.expectedEndTime = null;
                     playMultiTimerSound(timer.name);
                 }
                 updateTimerCard(timer.id);
+            } else {
+                timer.expectedEndTime = null;
             }
         });
         if (activeTimers === 0 && multiTimers.every(t => !t.isRunning)) {
-            // Optional: stop loop if nothing running? 
-            // Better to keep running if in multi mode, or just rely on state.
+            // Optional: stop loop if nothing running
         }
     }, 1000);
 }

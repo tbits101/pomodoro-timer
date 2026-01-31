@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pomodoro-v1.16.0';
+const CACHE_NAME = 'pomodoro-v1.17.0';
 const ASSETS = [
     './',
     './index.html',

@@ -58,8 +58,10 @@ A beautiful, glassmorphism-styled timer application built with vanilla HTML, CSS
 ### 🔔 Notifications
 - **Audio & Visual Alerts**: Plays sound and sends browser notifications when timers end.
 - **PWA Support**: Installable on Android/iOS/Desktop with offline support and automated update notifications.
-
-## How to Run
+### 🛡️ Reliability & Precision
+- **High-Precision Timers**: Transitioned to timestamp-based (`Date.now()`) logic (v1.17+).
+  - Timers remain 100% accurate even in background tabs or when the phone screen is off.
+  - Eliminated "drift" caused by browser throttling of background intervals.
 
 1. **Local Server (Recommended)**:
    Browser notifications often require the site to be served over HTTP/HTTPS, not `file://`.
@@ -210,7 +212,9 @@ We have a comprehensive plan to evolve this tool into a productivity powerhouse.
 - **19. Offline & Reliability**
     - [x] Full offline mode support
     - [ ] Battery-efficient background workers
-- **20. Accessibility**
+- **20. Reliability**
+    - [x] **High-Precision Timers**: Timestamp-based logic for zero-drift in background (v1.17+).
+- **21. Accessibility**
     - [ ] Screen reader support
     - [ ] Color-blind themes
 
