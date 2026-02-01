@@ -14,6 +14,30 @@ status:
 test:
     npx playwright test
 
+# Install dependencies and setup environment for WSL2
+setup-env:
+    sudo apt update
+    sudo apt install -y python3 net-tools
+    npm install
+    npx playwright install chromium
+    sudo npx playwright install-deps chromium
+    @echo "Environment setup complete."
+
+# Show networking info for WSL2/Windows communication
+ip:
+    @echo "WSL2 IP Address (Internal):"
+    @hostname -I | awk '{print $1}'
+    @echo "If you are on Windows, try accessing http://$(hostname -I | awk '{print $1}'):8080"
+
+# Attempt to fix common networking issues (ensure port 8080 is open)
+fix-networking:
+    @if command -v ufw > /dev/null; then \
+        sudo ufw allow 8080/tcp; \
+        echo "UFW rule added for port 8080."; \
+    fi
+    @echo "IMPORTANT: On Windows, you may need to run this in PowerShell (Admin):"
+    @echo "New-NetFirewallRule -DisplayName 'WSL 8080' -Direction Inbound -Action Allow -Protocol TCP -LocalPort 8080"
+
 # Check if README.md has been modified compared to origin/main
 check-docs:
     @if git diff --quiet origin/main -- README.md; then \
