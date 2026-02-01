@@ -43,7 +43,12 @@ A beautiful, glassmorphism-styled timer application built with vanilla HTML, CSS
   - **Intelligent Extensions**: Adding time during overtime automatically exits back to normal countdown
   - **Clean Interface**: Task queue hidden, responsive button layout prevents overflow
   - **Organized Settings**: Improved grid layout for auto-advance and auto-start toggles
-
+  - **Refined UI (v1.18)**: Improved progress bar visibility and optimized vertical spacing for better mobile experience.
+  
+- **Deadline Timer (Enhanced v1.18)**:
+  - **Persistent Deadlines**: Deadlines now survive page reloads and browser restarts.
+  - **Smart Refresh**: Timer updates once per minute when far from deadline (>100m) to save resources, switching to second-by-second updates as the deadline approaches.
+  - **Cleaner Interface**: Removed distractions (circular ring) for a focused countdown view.
 
 
 ### 📊 Tracking & History

@@ -9,6 +9,7 @@ let modes = { ...DEFAULT_MODES };
 let history = []; // [{ id, task, date, duration }]
 let currentCategory = 'focus';
 let currentSubMode = 'focus';
+// ... existing variables ...
 let currentMode = 'focus'; // Keep for compatibility with existing logic for now
 let timeLeft = modes[currentMode] * 60;
 let timerId = null;
@@ -343,14 +344,24 @@ function init() {
     // Load Deadline
     const savedDeadline = localStorage.getItem('pomodoroDeadline');
     if (savedDeadline) {
-        // We restore the target, but we don't auto-start the timer to avoid ringing immediately if expired
-        // Or maybe we just set the input value?
-        deadlineTarget = parseInt(savedDeadline);
-        // Convert timestamp to YYYY-MM-DDTHH:MM for input
-        const date = new Date(deadlineTarget);
-        // Adjust for timezone offset to show correct local time in input
-        const localIso = new Date(date.getTime() - (date.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
-        if (deadlineInput) deadlineInput.value = localIso;
+        const target = parseInt(savedDeadline);
+        // Only restore if future
+        if (target > Date.now()) {
+            deadlineTarget = target;
+            const date = new Date(deadlineTarget);
+            const localIso = new Date(date.getTime() - (date.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+            if (deadlineInput) deadlineInput.value = localIso;
+
+            // Auto-switch and start
+            // Use setTimeout to ensure DOM is ready and other inits are done
+            setTimeout(() => {
+                switchCategory('utility');
+                switchMode('deadline');
+                startTimer();
+            }, 100);
+        } else {
+            localStorage.removeItem('pomodoroDeadline');
+        }
     }
 
     // Load Turns Config
@@ -494,7 +505,11 @@ function updateDisplay() {
 
                 let text = '';
                 if (days > 0) text += `${days}d `;
-                text += `${hours}h ${minutes}m ${seconds}s`;
+                text += `${hours}h ${minutes}m`;
+                // Only show seconds if less than 100 minutes remaining
+                if (diff < 100 * 60 * 1000) {
+                    text += ` ${seconds}s`;
+                }
                 timeDisplay.textContent = text;
             } else {
                 timeDisplay.textContent = "Time's up!";
@@ -924,7 +939,8 @@ function switchMode(mode) {
         timeLeft = 10 * 60;
         timeLeft = 10 * 60;
     } else if (mode === 'deadline') {
-        document.body.classList.add('utility-mode'); // Re-use utility styling if exists, or fallback
+        document.body.classList.add('deadline-mode'); // Added dedicated class
+        document.body.classList.add('utility-mode');
         deadlineOptions.classList.remove('hidden');
         titleDisplay.textContent = 'Deadline Timer';
         timeLeft = 0; // Not used for display directly
@@ -1312,21 +1328,28 @@ function startTimer() {
 
         // Initialize Deadline
         if (currentMode === 'deadline') {
-            if (!deadlineInput.value) {
+            // If we have a stored target, use it even if input is empty (e.g. from reload)
+            // But if input has changed, prefer input? 
+            // Simplified: if already set and compatible with input, fine.
+            if (!deadlineTarget && !deadlineInput.value) {
                 alert('Please select a target date and time.');
                 isRunning = false;
                 startBtn.textContent = 'Start';
                 return;
             }
-            const target = new Date(deadlineInput.value).getTime();
-            if (target <= now) {
-                alert('Please select a future time.');
-                isRunning = false;
-                startBtn.textContent = 'Start';
-                return;
+
+            if (deadlineInput.value) {
+                const target = new Date(deadlineInput.value).getTime();
+                if (target > now) {
+                    deadlineTarget = target;
+                    localStorage.setItem('pomodoroDeadline', deadlineTarget);
+                } else if (!deadlineTarget) {
+                    alert('Please select a future time.');
+                    isRunning = false;
+                    startBtn.textContent = 'Start';
+                    return;
+                }
             }
-            deadlineTarget = target;
-            localStorage.setItem('pomodoroDeadline', deadlineTarget);
         }
 
         timerId = setInterval(() => {
@@ -1339,9 +1362,18 @@ function startTimer() {
                 if (currentMode === 'stopwatch') {
                     timeLeft = Math.floor((currentTime - expectedStartTime) / 1000);
                 } else if (currentMode === 'deadline') {
-                    // Deadline only needs display update, but we check expiry
+                    // Smart Refresh Logic
                     const diff = deadlineTarget - currentTime;
-                    timeLeft = Math.floor(diff / 1000); // Sync timeLeft for completion check logic below
+                    timeLeft = Math.floor(diff / 1000);
+
+                    // If > 100 mins, only update every 60 seconds (roughly)
+                    // We can check if seconds is 0 to sync with minute change
+                    if (diff > 100 * 60 * 1000) {
+                        const sec = Math.floor(currentTime / 1000);
+                        if (sec % 60 !== 0) {
+                            return; // Skip display update this tick
+                        }
+                    }
                 } else if (currentMode === 'turns') {
                     if (isOvertime) {
                         timeLeft = Math.floor((currentTime - expectedStartTime) / 1000);
@@ -1372,7 +1404,7 @@ function startTimer() {
 
             updateDisplay();
 
-            if (currentMode !== 'flowtime' && currentMode !== 'stopwatch' && currentMode !== 'turns' && timeLeft <= 0) {
+            if (currentMode !== 'flowtime' && currentMode !== 'stopwatch' && currentMode !== 'deadline' && currentMode !== 'turns' && timeLeft <= 0) {
                 clearInterval(timerId);
                 isRunning = false;
                 startBtn.textContent = 'Start';
