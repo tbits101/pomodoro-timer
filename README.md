@@ -229,3 +229,12 @@ This repository uses `just` to enforce standards.
 - **Mandatory Documentation**: `just commit` and `just release` will fail if `README.md` hasn't been updated.
 - **Version Tracking**: `just bump` maintains the `version.js` file and build timestamps.
 - **AI-Agent Ready**: Follows rules defined in the `.agent/rules` directory.
+
+### 🧪 Automated Testing (v1.18+)
+- **Comprehensive Test Suite**: 22 Playwright tests covering all core and specialty modes (Focus, Health, Sport, Kitchen, Utility, Family).
+- **Environment Stability**: Optimized for execution in high-resource environments (e.g., WSL2) with specialized stability handling for CSS transitions.
+- **Regression Prevention**: Automated verification of:
+    - High-precision timestamp-based timers.
+    - Mode-specific UI states (Breathing phases, Interval configurations).
+    - Data persistence in `localStorage`.
+    - Turn management and history recording.

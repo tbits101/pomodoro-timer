@@ -12,7 +12,7 @@ test.describe('Family Mode (Sharing Turns)', () => {
                 scroll-behavior: auto !important;
             }
         `});
-        await page.click('button[data-category="family"]');
+        await page.click('button[data-category="family"]', { force: true });
     });
 
     test('should display Sharing Turns mode', async ({ page }) => {

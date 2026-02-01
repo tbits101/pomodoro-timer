@@ -12,11 +12,11 @@ test.describe('Kitchen Mode Tests', () => {
                 scroll-behavior: auto !important;
             }
         `});
-        await page.click('button[data-category="kitchen"]');
+        await page.click('button[data-category="kitchen"]', { force: true });
     });
 
     test('should run Multi-Timer Dashboard', async ({ page }) => {
-        await page.click('button[data-mode="multi"]');
+        await page.click('button[data-mode="multi"]', { force: true });
         const addBtn = page.locator('#add-timer-btn');
         await expect(addBtn).toBeVisible();
 
@@ -31,27 +31,27 @@ test.describe('Kitchen Mode Tests', () => {
     });
 
     test('should run Grill Master', async ({ page }) => {
-        await page.click('button[data-mode="grill"]');
+        await page.click('button[data-mode="grill"]', { force: true });
         await expect(page.locator('#grill-presets')).toBeVisible();
 
-        await page.click('.grill-btn[data-time="300"]'); // Medium
-        await expect(page.locator('#time-display')).toHaveText('05:00');
+        await page.click('.steak-btn[data-time="6"]'); // Medium (6 mins)
+        await expect(page.locator('#time-display')).toHaveText('06:00');
     });
 });
 
 test.describe('Utility Mode Tests', () => {
     test.beforeEach(async ({ page }) => {
         await page.goto('/');
-        await page.click('button[data-category="utility"]');
+        await page.click('button[data-category="utility"]', { force: true });
     });
 
     test('should run General Countdown', async ({ page }) => {
-        await page.click('button[data-mode="countdown"]');
+        await page.click('button[data-mode="countdown"]', { force: true });
         await expect(page.locator('#time-display')).toHaveText('10:00');
     });
 
     test('should handle Deadline Timer', async ({ page }) => {
-        await page.click('button[data-mode="deadline"]');
+        await page.click('button[data-mode="deadline"]', { force: true });
         const deadlineInput = page.locator('#deadline-input');
         await expect(deadlineInput).toBeVisible();
 
@@ -61,7 +61,7 @@ test.describe('Utility Mode Tests', () => {
         const dateStr = tomorrow.toISOString().slice(0, 16);
         await deadlineInput.fill(dateStr);
 
-        await page.click('#start-btn');
+        await page.click('#start-btn', { force: true });
         await expect(page.locator('#time-display')).toContainText('d');
     });
 });

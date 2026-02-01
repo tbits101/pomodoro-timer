@@ -18,7 +18,7 @@
 <body>
     <div class="container">
         <div class="glass-card">
-            <h1 class="title">Focus</h1>
+            <h1 class="title" id="title-display">Focus</h1>
 
             <nav class="category-nav">
                 <button class="category-btn active" data-category="focus">Focus</button>
@@ -55,17 +55,15 @@
                     <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem;">
                         <div class="option-group">
                             <label>Work (s)</label>
-                            <input type="number" id="interval-work-input" value="40" min="5" step="5"
-                                class="select-input">
+                            <input type="number" id="interval-work" value="40" min="5" step="5" class="select-input">
                         </div>
                         <div class="option-group">
                             <label>Rest (s)</label>
-                            <input type="number" id="interval-rest-input" value="20" min="5" step="5"
-                                class="select-input">
+                            <input type="number" id="interval-rest" value="20" min="5" step="5" class="select-input">
                         </div>
                         <div class="option-group">
                             <label>Cycles</label>
-                            <input type="number" id="interval-cycles-input" value="8" min="1" class="select-input">
+                            <input type="number" id="interval-cycles" value="8" min="1" class="select-input">
                         </div>
                     </div>
                 </div>
@@ -170,27 +168,27 @@
             </div>
 
             <div id="breath-options" class="breath-options hidden">
-                <button class="breath-session-btn active" data-session="micro">
+                <button class="breath-session-btn breath-session-item active" data-session="micro">
                     <span>Micro-Reset</span>
                     <span class="duration-clue">2-1-4</span>
                 </button>
-                <button class="breath-session-btn" data-session="standard">
+                <button class="breath-session-btn breath-session-item" data-session="standard">
                     <span>Standard Prep</span>
                     <span class="duration-clue">5-5</span>
                 </button>
-                <button class="breath-session-btn" data-session="deep">
+                <button class="breath-session-btn breath-session-item" data-session="deep">
                     <span>Deep Transition</span>
                     <span class="duration-clue">6-4-6</span>
                 </button>
-                <button class="breath-session-btn" data-session="box">
+                <button class="breath-session-btn breath-session-item" data-session="box">
                     <span>Box</span>
                     <span class="duration-clue">4-4-4-4</span>
                 </button>
-                <button class="breath-session-btn" data-session="relax">
+                <button class="breath-session-btn breath-session-item" data-session="relax">
                     <span>Relax</span>
                     <span class="duration-clue">4-7-8</span>
                 </button>
-                <button class="breath-session-btn" data-session="custom">
+                <button class="breath-session-btn breath-session-item" data-session="custom">
                     <span>Custom</span>
                     <span class="duration-clue">Edit</span>
                 </button>
@@ -264,19 +262,19 @@
                 </button>
             </div>
 
-            <div class="task-section">
+            <div class="task-section" id="task-list">
                 <!-- Active Task -->
                 <div id="active-task-display" class="glass-card hidden">
                     <div
                         style="font-size: 0.8rem; opacity: 0.7; text-transform: uppercase; margin-bottom: 0.5rem; letter-spacing: 0.05em;">
                         Current Task</div>
-                    <h3 id="current-task-text" contenteditable="true" title="Click to edit task"
+                    <h3 id="current-task-text" class="task-item-text" contenteditable="true" title="Click to edit task"
                         style="font-size: 1.4rem; margin-bottom: 0.8rem; overflow-wrap: break-word; outline: none; padding: 4px; border-radius: 8px;">
                     </h3>
                     <button id="complete-task-btn" class="btn primary small-btn"
-                        style="width: auto; padding: 0.4rem 1rem; font-size: 0.9rem;">Complete & Take Break</button>
-                    <button id="clear-task-btn" class="icon-btn-small"
-                        style="position: absolute; top: 1rem; right: 1rem; opacity: 0.5;" title="Cancel Task">✕</button>
+                        style="width: 100%; margin-bottom: 0.5rem; justify-content: center;">Complete Task</button>
+                    <button id="clear-task-btn" class="btn secondary small-btn delete-task-btn"
+                        style="width: 100%; justify-content: center;">Cancel</button>
                 </div>
 
                 <!-- Input -->

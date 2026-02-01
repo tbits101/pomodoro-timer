@@ -127,6 +127,23 @@ let autoStartTurns = false;
 let turnDuration = 10; // Default 10 mins
 let isOvertime = false;
 
+// Mode Names for History/Display
+const MODE_NAME_MAP = {
+    focus: 'Focus',
+    flowtime: 'Flowtime Focus',
+    short: 'Short Break',
+    long: 'Long Break',
+    breath: 'Breathing',
+    grounding: 'Grounding',
+    microbreak: 'Micro-Break',
+    interval: 'Interval',
+    stopwatch: 'Stopwatch',
+    multi: 'Kitchen',
+    countdown: 'Timer',
+    deadline: 'Deadline',
+    turns: 'Sharing Turns'
+};
+
 // DOM Elements
 const timeDisplay = document.getElementById('time-display');
 const startBtn = document.getElementById('start-btn');
@@ -213,9 +230,21 @@ const flipToggle = document.getElementById('flip-reminder-toggle');
 
 // Sport Elements
 const intervalOptions = document.getElementById('interval-options');
-const intervalWorkInput = document.getElementById('interval-work-input');
-const intervalRestInput = document.getElementById('interval-rest-input');
-const intervalCyclesInput = document.getElementById('interval-cycles-input');
+const intervalWorkInput = document.getElementById('interval-work');
+const intervalRestInput = document.getElementById('interval-rest');
+const intervalCyclesInput = document.getElementById('interval-cycles');
+
+[intervalWorkInput, intervalRestInput, intervalCyclesInput].forEach(input => {
+    if (input) input.addEventListener('input', () => {
+        if (currentMode === 'interval' && !isRunning) {
+            intervalWorkTime = parseInt(intervalWorkInput.value) || 40;
+            intervalRestTime = parseInt(intervalRestInput.value) || 20;
+            totalIntervalCycles = parseInt(intervalCyclesInput.value) || 8;
+            timeLeft = intervalWorkTime;
+            updateDisplay();
+        }
+    });
+});
 
 // Deadline Elements
 const deadlineOptions = document.getElementById('deadline-options');
@@ -355,6 +384,7 @@ function init() {
             childNameInput.value = '';
             saveTurnsConfig();
             renderChildrenList();
+            if (currentMode === 'turns') updateDisplay();
         }
     });
 
@@ -466,23 +496,7 @@ function updateDisplay() {
         timeDisplay.textContent = formatTime(displayTime);
     }
 
-    // Map submodes to user-friendly names
-    const modeNameMap = {
-        focus: 'Focus',
-        flowtime: 'Flowtime Focus',
-        short: 'Short Break',
-        long: 'Long Break',
-        breath: 'Breathing',
-        grounding: 'Grounding',
-        microbreak: 'Micro-Break',
-        interval: 'Interval',
-        stopwatch: 'Stopwatch',
-        multi: 'Kitchen',
-        countdown: 'Timer',
-        deadline: 'Deadline'
-    };
-
-    const modeName = modeNameMap[currentMode] || 'Timer';
+    const modeName = MODE_NAME_MAP[currentMode] || 'Timer';
 
     let taskPart = currentTaskText.textContent ? `[${currentTaskText.textContent}] ` : '';
     // Special task part for Turns mode
@@ -790,6 +804,10 @@ function switchMode(mode) {
         }
         timeLeft = BREATH_SESSIONS[currentBreathSession].duration * 60;
         titleDisplay.textContent = 'Breathing';
+        if (breathInstruction) {
+            breathInstruction.textContent = 'Ready?';
+            breathInstruction.classList.remove('hidden');
+        }
     } else if (mode === 'grounding') {
         document.body.classList.add('grounding-mode');
         groundingInstruction.classList.remove('hidden');
@@ -1316,7 +1334,7 @@ function startTimer() {
 
                 // Add to history if Focus
                 if (currentMode === 'focus') {
-                    addToHistory(currentTaskText.textContent);
+                    addToHistory(currentTaskText.textContent || MODE_NAME_MAP[currentMode] || 'Focus');
                     focusCount++;
                     // Reset session stats for next
                     sessionInterruptions = 0;
@@ -1650,10 +1668,10 @@ function updateTaskUI() {
 
             li.innerHTML = `
                 <div class="drag-handle">⋮⋮</div>
-                <span class="task-text" contenteditable="true" data-index="${index}">${task.text}</span>
+                <span class="task-text task-item-text" contenteditable="true" data-index="${index}">${task.text}</span>
                 <div class="item-actions">
                     <button class="promote-btn" data-index="${index}" title="Make Current">⬆</button>
-                    <button class="remove-queue-btn" data-index="${index}" title="Remove">✕</button>
+                    <button class="remove-queue-btn delete-task-btn" data-index="${index}" title="Remove">✕</button>
                 </div>
             `;
             taskQueueList.appendChild(li);

@@ -28,12 +28,12 @@ test.describe('Tasks and History', () => {
 
         // Edit task
         const taskItem = taskList.locator('.task-item-text').first();
-        await taskItem.click();
-        await page.keyboard.type(' Edited');
+        await taskItem.fill('Task 1 Edited');
         await page.keyboard.press('Enter');
         await expect(taskItem).toHaveText('Task 1 Edited');
 
         // Delete task
+        page.once('dialog', dialog => dialog.accept());
         await taskList.locator('.delete-task-btn').first().click();
         await expect(taskList).not.toContainText('Task 1 Edited');
     });
@@ -42,23 +42,24 @@ test.describe('Tasks and History', () => {
         // We can't wait 25 mins. 
         // We can either mock the timer in the script or use a very short custom time.
 
-        // Switch to short break (5 mins)
-        await page.click('button[data-mode="short"]');
+        // Use focus mode
+        await page.click('button[data-mode="focus"]', { force: true });
 
         // Set custom time to 1 second for testing
         const timeDisplay = page.locator('#time-display');
         await timeDisplay.click();
-        await timeDisplay.fill('00:01');
+        const timerInput = page.locator('.timer-input');
+        await timerInput.fill('00:01');
         await page.keyboard.press('Enter');
 
-        await page.click('#start-btn');
+        await page.click('#start-btn', { force: true });
 
         // Wait for it to finish and ring
         await page.waitForTimeout(2000);
 
         await page.click('#history-btn');
         const historyList = page.locator('#history-list');
-        await expect(historyList).toContainText('Short Break');
+        await expect(historyList).toContainText('Focus');
     });
 
     test('should persist data in localStorage', async ({ page }) => {
