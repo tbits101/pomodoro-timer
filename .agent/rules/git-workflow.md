@@ -16,6 +16,99 @@ All project management tasks are centralized through `just`.
 - `just deploy`: Deploy to GitHub Pages.
 - `just release "msg"`: Full release workflow (bump, commit, push, tag, deploy).
 
+## Commit Message Standards
+
+### Format
+Use conventional commit format with detailed body:
+
+```
+<type>(<scope>): <short summary>
+
+<detailed description>
+
+## <Section Title>
+- Bullet point details
+- More details
+
+## <Another Section>
+- More organized information
+
+<footer>
+```
+
+### Types
+- `feat`: New feature
+- `fix`: Bug fix
+- `refactor`: Code restructuring without behavior change
+- `style`: UI/CSS changes
+- `docs`: Documentation only
+- `test`: Adding or updating tests
+- `chore`: Maintenance tasks
+
+### Scope
+Use specific component names: `family`, `breathing`, `interval`, `ui`, `timer`, `history`, etc.
+
+### Structure Guidelines
+1. **Short Summary** (50-72 chars): Imperative mood, no period
+2. **Blank Line**
+3. **Detailed Description**: Explain what and why, not how
+4. **Blank Line**
+5. **Organized Sections**: Use `##` headers for logical grouping
+   - Visual Improvements
+   - Feature Enhancements
+   - Layout Fixes
+   - UX Improvements
+   - Technical Changes
+   - Bug Fixes
+6. **Bullet Points**: Use `*` or `-` for lists, indent sub-items with 2 spaces
+7. **Footer**: Optional references (Closes #issue, Version: vX.Y.Z)
+
+### Example (Good)
+```
+feat(family): Comprehensive Family Timer improvements
+
+Enhanced the Family Timer (Turns mode) with better visuals, flexible controls, and refined layout.
+
+## Visual Improvements
+- Replaced bulky circular progress ring with sleek linear progress bar
+- Linear bar is more compact and intuitive for tracking turn duration
+- 8px height with rounded corners and smooth transitions
+
+## Time Control Enhancements
+- Added negative extension buttons: -1m, -2m, -5m
+- Smart logic:
+  * Subtracting time can push timer into overtime
+  * Adding time during overtime can exit back to normal countdown
+
+## Layout Fixes
+- Added flex-wrap to .controls to prevent button overflow on mobile
+- Set min-width: 100px on control buttons for readability
+
+## Technical Changes
+- HTML: Added linear progress container, restructured extension controls
+- CSS: Hide circular progress in turns mode, responsive layouts
+- JS: Updated extendTurn() to handle negative values
+
+Closes #family-timer-improvements
+Version: v1.19
+```
+
+### Example (Bad)
+```
+updated family timer
+
+- added some buttons
+- changed css
+- fixed stuff
+```
+
+### Key Principles
+- **Be comprehensive**: Future developers should understand the full scope
+- **Be organized**: Group related changes under clear section headers
+- **Be specific**: Mention exact components, functions, or CSS classes when relevant
+- **Be contextual**: Explain the "why" behind non-obvious decisions
+- **Use proper formatting**: Markdown headers, bullet points, code blocks
+
 ## Deployment Strategy
 - **Branching**:
   - `main`: Source of truth and active development.
