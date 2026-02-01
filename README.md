@@ -29,7 +29,7 @@ A beautiful, glassmorphism-styled timer application built with vanilla HTML, CSS
 - **Stopwatch**: Count-up timer for open-ended activities (v1.15+).
 
 ### 🍳 Kitchen & Cooking
-- **Grill Master**: Steak doneness presets (Rare/Medium/Well) with optional flip reminders (v1.15+).
+- **Grill Master**: Steak doneness presets for different food with optional flip reminders (v1.19+). 
 - **Multi-Timer Dashboard**: Run multiple independent timers simultaneously for complex cooking tasks (v1.15+).
 - **Fix (v1.15.4)**: Resolved an issue where the dashboard was hidden by the main timer.
 

@@ -99,23 +99,66 @@
                     </div>
                 </div>
 
-                <div id="grill-presets" class="sub-options hidden">
-                    <div class="option-group">
-                        <label>Steak Doneness</label>
-                        <div class="preset-buttons">
-                            <button class="steak-btn" data-time="4">Rare</button>
-                            <button class="steak-btn" data-time="6">Medium</button>
-                            <button class="steak-btn" data-time="9">Well</button>
-                        </div>
+                <div id="grill-dashboard" class="multi-timer-dashboard hidden">
+                    <div class="dashboard-controls">
+                        <span style="font-size: 0.9rem; font-weight: 600; opacity: 0.8; margin-right: 0.5rem;">Quick
+                            Grill:</span>
                     </div>
-                    <div class="option-group">
-                        <label class="toggle-group">
-                            <span>Flip Reminder (2m)</span>
-                            <label class="switch">
-                                <input type="checkbox" id="flip-reminder-toggle">
-                                <span class="slider round"></span>
-                            </label>
-                        </label>
+                    <div class="quick-presets grill-presets-container">
+                        <button class="emoji-preset-btn" data-time="300" data-name="Shrimp" data-icon="🍤">
+                            <span class="emoji">🍤</span>
+                            <span class="label">Shrimp</span>
+                        </button>
+                        <button class="emoji-preset-btn" data-time="300" data-name="Asparagus" data-icon="🥬">
+                            <span class="emoji">🥬</span>
+                            <span class="label">Veggie</span>
+                        </button>
+                        <button class="emoji-preset-btn" data-time="360" data-name="Steak Medium" data-icon="🥩">
+                            <span class="emoji">🥩</span>
+                            <span class="label">Steak</span>
+                        </button>
+                        <button class="emoji-preset-btn" data-time="480" data-name="Burger" data-icon="🍔">
+                            <span class="emoji">🍔</span>
+                            <span class="label">Burger</span>
+                        </button>
+                        <button class="emoji-preset-btn" data-time="480" data-name="Pizza" data-icon="🍕">
+                            <span class="emoji">🍕</span>
+                            <span class="label">Pizza</span>
+                        </button>
+                        <button class="emoji-preset-btn" data-time="600" data-name="Sausage" data-icon="🌭">
+                            <span class="emoji">🌭</span>
+                            <span class="label">Sausage</span>
+                        </button>
+                        <button class="emoji-preset-btn" data-time="600" data-name="Fish" data-icon="🐟">
+                            <span class="emoji">🐟</span>
+                            <span class="label">Fish</span>
+                        </button>
+                        <button class="emoji-preset-btn" data-time="600" data-name="Kebabs" data-icon="🍢">
+                            <span class="emoji">🍢</span>
+                            <span class="label">Kebabs</span>
+                        </button>
+                        <button class="emoji-preset-btn" data-time="720" data-name="Pork Chop" data-icon="🍖">
+                            <span class="emoji">🍖</span>
+                            <span class="label">Chops</span>
+                        </button>
+                        <button class="emoji-preset-btn" data-time="900" data-name="Chicken" data-icon="🍗">
+                            <span class="emoji">🍗</span>
+                            <span class="label">Chicken</span>
+                        </button>
+                        <button class="emoji-preset-btn" data-time="900" data-name="Corn" data-icon="🌽">
+                            <span class="emoji">🌽</span>
+                            <span class="label">Corn</span>
+                        </button>
+                        <button class="emoji-preset-btn" data-time="1800" data-name="Potato" data-icon="🥔">
+                            <span class="emoji">🥔</span>
+                            <span class="label">Potato</span>
+                        </button>
+                    </div>
+                    <div class="dashboard-controls" style="margin-top: 1rem;">
+                        <button id="add-grill-timer-btn" class="btn primary small-btn">+ Custom Timer</button>
+                    </div>
+                    <div id="grill-timer-grid" class="timer-grid">
+                        <!-- Grill Timer cards injected here -->
                     </div>
                 </div>
 

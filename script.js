@@ -120,6 +120,10 @@ let deadlineTarget = null;
 let multiTimers = []; // { id, name, duration, timeLeft, isRunning }
 let multiTimerIntervalId = null;
 
+// Grill Master State
+let grillTimers = [];
+let grillTimerIntervalId = null;
+
 // Turns State
 let turnsNames = [];
 let currentTurnIndex = 0;
@@ -225,9 +229,11 @@ const customInputs = {
 };
 
 // Grill Elements
-const grillPresets = document.getElementById('grill-presets');
-const steakBtns = document.querySelectorAll('.steak-btn');
-const flipToggle = document.getElementById('flip-reminder-toggle');
+// Grill Elements
+const grillDashboard = document.getElementById('grill-dashboard');
+const grillTimerGrid = document.getElementById('grill-timer-grid');
+const addGrillTimerBtn = document.getElementById('add-grill-timer-btn');
+const emojiPresetBtns = document.querySelectorAll('.emoji-preset-btn');
 
 // Sport Elements
 const intervalOptions = document.getElementById('interval-options');
@@ -641,29 +647,7 @@ function applyPreset(presetName) {
     }
 }
 
-function handleFlipReminder() {
-    if (!isRunning || !isFlipReminderEnabled || currentMode !== 'grill') return;
 
-    const elapsed = Math.round((currentSessionDuration - timeLeft));
-    if (elapsed > 0 && elapsed % flipReminderInterval === 0 && elapsed !== lastFlipTime) {
-        lastFlipTime = elapsed;
-        if (soundEnabled) {
-            // Distinct sound for flip or just reuse alarm briefly?
-            // Reusing alarm but stopping it quickly
-            alarmSound.play().catch(e => console.log('Audio error', e));
-            setTimeout(() => {
-                alarmSound.pause();
-                alarmSound.currentTime = 0;
-            }, 1000);
-        }
-        if ('Notification' in window && Notification.permission === 'granted') {
-            new Notification('Grill Master', {
-                body: 'Time to flip the meat!',
-                icon: 'https://cdn-icons-png.flaticon.com/512/2928/2928750.png'
-            });
-        }
-    }
-}
 
 function handleGroundingTick() {
     if (!isRunning) return;
@@ -853,7 +837,7 @@ function switchMode(mode) {
     if (customBreathConfig) customBreathConfig.classList.add('hidden');
     breathInstruction.classList.add('hidden');
     groundingInstruction.classList.add('hidden');
-    grillPresets.classList.add('hidden');
+    grillDashboard.classList.add('hidden');
     intervalOptions.classList.add('hidden');
     multiTimerDashboard.classList.add('hidden');
     deadlineOptions.classList.add('hidden');
@@ -914,10 +898,12 @@ function switchMode(mode) {
         timeLeft = 0; // Stopwatch starts at 0
     } else if (mode === 'grill') {
         document.body.classList.add('grill-mode');
-        grillPresets.classList.remove('hidden');
+        grillDashboard.classList.remove('hidden');
+        if (timerContainer) timerContainer.style.display = 'none';
+        if (mainControls) mainControls.style.display = 'none';
         titleDisplay.textContent = 'Grill Master';
-        timeLeft = 6 * 60; // Default Medium
-        currentSessionDuration = timeLeft; // Ensure duration is set
+        timeLeft = 0;
+        if (!grillTimerIntervalId) startGrillLoop();
     } else if (mode === 'short') {
         document.body.classList.add('short-break');
         titleDisplay.textContent = 'Short Break';
@@ -1397,7 +1383,7 @@ function startTimer() {
                     timeLeft = Math.ceil((expectedEndTime - currentTime) / 1000);
                 }
 
-                if (currentMode === 'grill') handleFlipReminder();
+
                 if (currentMode === 'grounding') handleGroundingTick();
                 if (currentMode === 'interval') handleIntervalTick();
             }
@@ -1545,9 +1531,7 @@ function resetTimer() {
         }
         currentSessionDuration = BREATH_SESSIONS[currentBreathSession].duration * 60;
     } else if (currentMode === 'grill') {
-        const activeBtn = document.querySelector('.steak-btn.active');
-        const mins = activeBtn ? parseInt(activeBtn.dataset.time) : 6;
-        currentSessionDuration = mins * 60;
+        currentSessionDuration = 0;
     } else if (currentMode === 'interval') {
         currentSessionDuration = intervalWorkTime;
         currentCycle = 1;
@@ -2133,21 +2117,7 @@ clearHistoryBtn.addEventListener('click', () => {
     }
 });
 
-// Grill Master Interactions
-steakBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-        steakBtns.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        timeLeft = parseInt(btn.dataset.time) * 60;
-        currentSessionDuration = timeLeft;
-        updateDisplay();
-    });
-});
 
-flipToggle.addEventListener('change', (e) => {
-    isFlipReminderEnabled = e.target.checked;
-    lastFlipTime = 0;
-});
 
 // Start
 // === Multi-Timer Logic ===
@@ -2388,3 +2358,224 @@ window.addEventListener('pwaUpdateAvailable', (event) => {
         notification.remove();
     });
 });
+
+// === Grill Master Logic ===
+
+function createGrillTimer(duration, name = 'Grill Item', icon = '🔥') {
+    const id = Date.now();
+    const timer = {
+        id,
+        name: `${name} ${grillTimers.filter(t => t.name.startsWith(name)).length + 1}`,
+        icon,
+        duration,
+        timeLeft: duration,
+        isRunning: false,
+        totalDuration: duration,
+        expectedEndTime: null
+    };
+    grillTimers.push(timer);
+    renderGrillCards();
+    saveGrillTimers();
+}
+
+function deleteGrillTimer(id) {
+    grillTimers = grillTimers.filter(t => t.id !== id);
+    renderGrillCards();
+    saveGrillTimers();
+}
+
+function toggleGrillTimer(id) {
+    const timer = grillTimers.find(t => t.id === id);
+    if (timer) {
+        timer.isRunning = !timer.isRunning;
+        timer.expectedEndTime = null;
+        renderGrillCards();
+        checkGrillLoop();
+    }
+}
+
+function resetGrillTimer(id) {
+    const timer = grillTimers.find(t => t.id === id);
+    if (timer) {
+        timer.isRunning = false;
+        timer.timeLeft = timer.totalDuration;
+        timer.expectedEndTime = null;
+        renderGrillCards();
+        checkGrillLoop();
+    }
+}
+
+function startGrillLoop() {
+    if (grillTimerIntervalId) return;
+    grillTimerIntervalId = setInterval(() => {
+        let activeTimers = 0;
+        const now = Date.now();
+        grillTimers.forEach(timer => {
+            if (timer.isRunning && timer.timeLeft > 0) {
+                if (!timer.expectedEndTime) {
+                    timer.expectedEndTime = now + (timer.timeLeft * 1000);
+                }
+                timer.timeLeft = Math.ceil((timer.expectedEndTime - now) / 1000);
+                activeTimers++;
+                if (timer.timeLeft <= 0) {
+                    timer.isRunning = false;
+                    timer.timeLeft = 0;
+                    timer.expectedEndTime = null;
+                    playGrillSound(timer.name);
+                }
+                updateGrillCard(timer.id);
+            } else {
+                timer.expectedEndTime = null;
+            }
+        });
+
+        // Stop loop if not in grill mode to save resources? 
+        // But we want background timers! So keep running if any are running.
+        if (activeTimers === 0 && grillTimers.every(t => !t.isRunning) && currentMode !== 'grill') {
+            clearInterval(grillTimerIntervalId);
+            grillTimerIntervalId = null;
+        }
+    }, 1000);
+}
+
+function checkGrillLoop() {
+    const anyRunning = grillTimers.some(t => t.isRunning);
+    if (anyRunning && !grillTimerIntervalId) {
+        startGrillLoop();
+    } else if (!anyRunning && grillTimerIntervalId && currentMode !== 'grill') {
+        clearInterval(grillTimerIntervalId);
+        grillTimerIntervalId = null;
+    }
+}
+
+function playGrillSound(name) {
+    if (soundEnabled) {
+        alarmSound.play().catch(e => console.log(e));
+        if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification('Grill Master', { body: `${name} is ready! 🍽️` });
+        }
+    }
+}
+
+function renderGrillCards() {
+    if (!grillTimerGrid) return;
+    grillTimerGrid.innerHTML = '';
+    grillTimers.forEach(timer => {
+        const card = document.createElement('div');
+        card.className = `timer-card ${timer.isRunning ? 'running' : ''} ${timer.timeLeft === 0 && timer.totalDuration > 0 ? 'finished' : ''}`;
+        card.id = `grill-card-${timer.id}`;
+
+        const progressPct = ((timer.totalDuration - timer.timeLeft) / timer.totalDuration) * 100;
+
+        card.innerHTML = `
+            <div class="timer-card-header">
+                <div style="display:flex; align-items:center; gap:0.5rem; width:80%;">
+                    <span style="font-size:1.2rem;">${timer.icon}</span>
+                    <input type="text" class="timer-name" value="${timer.name}" onchange="updateGrillName(${timer.id}, this.value)" style="width:100%;">
+                </div>
+                <button class="timer-close-btn" onclick="deleteGrillTimer(${timer.id})">✕</button>
+            </div>
+            <div class="timer-digits" contenteditable="true" onblur="updateGrillDuration(${timer.id}, this.innerText)" onkeydown="handleGrillDurationKeydown(event, ${timer.id}, this)">${formatTime(timer.timeLeft)}</div>
+            <div class="timer-card-controls">
+                <button class="card-btn ${timer.isRunning ? 'pause' : 'start'}" onclick="toggleGrillTimer(${timer.id})">
+                    ${timer.isRunning ? 'Pause' : 'Start'}
+                </button>
+                <button class="card-btn reset" onclick="resetGrillTimer(${timer.id})">Reset</button>
+            </div>
+            <div class="card-progress" style="width: ${progressPct}%"></div>
+        `;
+        grillTimerGrid.appendChild(card);
+    });
+}
+
+function updateGrillCard(id) {
+    const timer = grillTimers.find(t => t.id === id);
+    if (!timer) return;
+
+    const card = document.getElementById(`grill-card-${id}`);
+    if (card) {
+        card.querySelector('.timer-digits').textContent = formatTime(timer.timeLeft);
+        const progressPct = ((timer.totalDuration - timer.timeLeft) / timer.totalDuration) * 100;
+        card.querySelector('.card-progress').style.width = `${progressPct}%`;
+
+        if (timer.timeLeft === 0) {
+            card.classList.add('finished');
+            card.classList.remove('running');
+            card.querySelector('.card-btn').textContent = 'Start';
+            card.querySelector('.card-btn').className = 'card-btn start';
+        }
+    }
+}
+
+function updateGrillName(id, newName) {
+    const timer = grillTimers.find(t => t.id === id);
+    if (timer) {
+        timer.name = newName;
+        saveGrillTimers();
+    }
+}
+
+function updateGrillDuration(id, timeString) {
+    const timer = grillTimers.find(t => t.id === id);
+    if (!timer) return;
+
+    let minutes = 0;
+    let seconds = 0;
+
+    if (timeString.includes(':')) {
+        const parts = timeString.split(':');
+        minutes = parseInt(parts[0]) || 0;
+        seconds = parseInt(parts[1]) || 0;
+    } else {
+        minutes = parseInt(timeString) || 0;
+    }
+
+    const newDuration = (minutes * 60) + seconds;
+
+    if (newDuration > 0) {
+        timer.duration = newDuration;
+        timer.totalDuration = newDuration;
+        timer.timeLeft = newDuration;
+        timer.isRunning = false;
+    }
+
+    renderGrillCards();
+    saveGrillTimers();
+}
+
+function handleGrillDurationKeydown(e, id, el) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        el.blur();
+    }
+}
+
+function saveGrillTimers() {
+    localStorage.setItem('pomodoroGrillTimers', JSON.stringify(grillTimers));
+}
+
+function loadGrillTimers() {
+    const saved = localStorage.getItem('pomodoroGrillTimers');
+    if (saved) {
+        grillTimers = JSON.parse(saved);
+        renderGrillCards();
+    }
+}
+
+// Event Listeners for Grill Master
+if (addGrillTimerBtn) {
+    addGrillTimerBtn.addEventListener('click', () => createGrillTimer(300, 'Custom Item', '🔥'));
+}
+
+emojiPresetBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+        const time = parseInt(btn.dataset.time);
+        const name = btn.dataset.name;
+        const icon = btn.dataset.icon;
+        createGrillTimer(time, name, icon);
+    });
+});
+
+// Init Load Grill
+loadGrillTimers();
+
