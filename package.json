@@ -1,6 +1,6 @@
 {
   "name": "pomodoro",
-  "version": "1.0.0",
+  "version": "1.19.0",
   "description": "A beautiful, glassmorphism-styled timer application built with vanilla HTML, CSS, and JavaScript. Originally a Pomodoro timer, now evolved into a versatile timing tool for productivity, health, sports, and kitchen tasks.",
   "main": "script.js",
   "scripts": {

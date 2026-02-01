@@ -44,7 +44,14 @@ A beautiful, glassmorphism-styled timer application built with vanilla HTML, CSS
   - **Clean Interface**: Task queue hidden, responsive button layout prevents overflow
   - **Organized Settings**: Improved grid layout for auto-advance and auto-start toggles
   - **Refined UI (v1.18)**: Improved progress bar visibility and optimized vertical spacing for better mobile experience.
-  
+  - **Compact Settings (v1.19)**: Optimized settings layout with single-row controls and condensed input fields.
+  - **UI Fixes (v1.19)**: Resolved text overlap issues in Turns mode and repositioned the main settings button for better accessibility.
+
+- **Mobile Optimization (v1.19)**: 
+  - Reduced main timer size on small screens (Phone) to maximize vertical space.
+  - Improved spacing and padding across all modes.
+  - Smart hiding of redundant elements (e.g., main timer ring in Kitchen Dashboard).
+
 - **Deadline Timer (Enhanced v1.18)**:
   - **Persistent Deadlines**: Deadlines now survive page reloads and browser restarts.
   - **Smart Refresh**: Timer updates once per minute when far from deadline (>100m) to save resources, switching to second-by-second updates as the deadline approaches.
