@@ -36,7 +36,15 @@ A beautiful, glassmorphism-styled timer application built with vanilla HTML, CSS
 ### ⏱️ Utility Timers
 - **Countdown Timer**: General-purpose countdown for any duration.
 - **Deadline Timer**: Track time remaining until a specific date and time.
-- **Sharing Turns**: Manage turn-based sharing for children with name displays, overtime counting, and auto-advance options (v1.16+).
+- **Sharing Turns (Family Timer)**: Manage turn-based sharing with comprehensive controls (v1.16+, enhanced v1.19+):
+  - **Visual Improvements**: Replaced bulky circular progress with sleek linear progress bar
+  - **Flexible Time Control**: Add or subtract time with quick buttons (+/-1m, +/-2m, +/-5m)
+  - **Smart Overtime**: Negative countdown when time expires (e.g., `-01:30`)
+  - **Intelligent Extensions**: Adding time during overtime automatically exits back to normal countdown
+  - **Clean Interface**: Task queue hidden, responsive button layout prevents overflow
+  - **Organized Settings**: Improved grid layout for auto-advance and auto-start toggles
+
+
 
 ### 📊 Tracking & History
 - **History Log**: Tracks completed sessions with **Inline Editing** for titles, durations, and dates.

@@ -266,6 +266,10 @@ const autoAdvanceTurnsToggle = document.getElementById('auto-advance-turns-toggl
 const autoStartTurnsToggle = document.getElementById('auto-start-turns-toggle');
 const activeChildDisplay = document.getElementById('active-child-display');
 const activeChildName = document.getElementById('active-child-name');
+const turnExtensionControls = document.getElementById('turn-extension-controls');
+const extendBtns = document.querySelectorAll('.extend-btn');
+const turnsProgressContainer = document.getElementById('turns-progress-container');
+const turnsProgressBar = document.getElementById('turns-progress-bar');
 
 // --- Initialization ---
 
@@ -405,6 +409,14 @@ function init() {
         autoStartTurns = autoStartTurnsToggle.checked;
         saveTurnsConfig();
     });
+
+    // Turn Extension Buttons
+    extendBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const mins = parseInt(btn.dataset.extend);
+            if (mins) extendTurn(mins);
+        });
+    });
 }
 
 function saveTurnsConfig() {
@@ -512,12 +524,14 @@ function updateDisplay() {
     } else if (currentMode === 'turns') {
         if (isOvertime) {
             circle.style.strokeDashoffset = 0; // Full ring during overtime
+            if (turnsProgressBar) turnsProgressBar.style.width = '100%';
             timeDisplay.classList.add('overtime');
-            timeDisplay.textContent = `+${formatTime(timeLeft)}`;
+            timeDisplay.textContent = `-${formatTime(timeLeft)}`;
         } else {
             timeDisplay.classList.remove('overtime');
             const percent = (timeLeft / currentSessionDuration) * 100;
             setProgress(percent, circle, circumference);
+            if (turnsProgressBar) turnsProgressBar.style.width = `${100 - percent}%`;
         }
     } else if (currentMode === 'breath') {
         const percent = (timeLeft / currentSessionDuration) * 100;
@@ -672,6 +686,51 @@ function nextTurn(manual = false) {
     }
 }
 
+function extendTurn(minutes) {
+    const secondsToAdd = minutes * 60;
+    const now = Date.now();
+
+    if (isOvertime) {
+        // timeLeft in overtime is "seconds since expiration"
+        // Adding time (positive minutes) reduces overtime.
+        // Removing time (negative minutes) increases overtime.
+        const newOvertime = timeLeft - secondsToAdd;
+
+        if (newOvertime < 0) {
+            // We have added enough time to get out of overtime
+            isOvertime = false;
+            timeLeft = Math.abs(newOvertime);
+            timeDisplay.classList.remove('overtime');
+            expectedEndTime = now + (timeLeft * 1000);
+            // Also reset currentSessionDuration to something sensible if it was skewed
+            currentSessionDuration = Math.max(timeLeft, turnDuration * 60);
+        } else {
+            // Still in overtime (or reached exactly 0)
+            timeLeft = newOvertime;
+            expectedStartTime = now - (timeLeft * 1000);
+        }
+    } else {
+        // Normal countdown
+        const newTime = timeLeft + secondsToAdd;
+        if (newTime <= 0) {
+            // Jump to overtime
+            isOvertime = true;
+            timeLeft = Math.abs(newTime);
+            timeDisplay.classList.add('overtime');
+            expectedStartTime = now - (timeLeft * 1000);
+        } else {
+            timeLeft = newTime;
+            expectedEndTime = now + (timeLeft * 1000);
+            // Adjust currentSessionDuration if we increased time
+            if (secondsToAdd > 0) {
+                currentSessionDuration += secondsToAdd;
+            }
+        }
+    }
+
+    updateDisplay();
+}
+
 function handleIntervalTick() {
     if (!isRunning) return;
 
@@ -785,6 +844,8 @@ function switchMode(mode) {
     deadlineOptions.classList.add('hidden');
     turnsOptions.classList.add('hidden');
     activeChildDisplay.classList.add('hidden');
+    if (turnExtensionControls) turnExtensionControls.classList.add('hidden');
+    if (turnsProgressContainer) turnsProgressContainer.classList.add('hidden');
     if (nextTurnBtn) nextTurnBtn.classList.add('hidden');
     circle.classList.remove('breathing-ring');
 
@@ -874,6 +935,8 @@ function switchMode(mode) {
         titleDisplay.textContent = 'Sharing Turns';
         timeLeft = turnDuration * 60;
         currentSessionDuration = timeLeft;
+        if (turnExtensionControls) turnExtensionControls.classList.remove('hidden');
+        if (turnsProgressContainer) turnsProgressContainer.classList.remove('hidden');
         if (nextTurnBtn) nextTurnBtn.classList.remove('hidden');
     } else {
         // Default (Focus)
@@ -887,7 +950,7 @@ function switchMode(mode) {
     // Show only for Focus category modes
     const isFocusCategory = ['focus', 'short', 'long', 'flowtime'].includes(mode);
     const taskSection = document.querySelector('.task-section');
-    if (taskSection) taskSection.classList.toggle('hidden', !isFocusCategory && mode !== 'turns'); // Keep turns session visible if we want? Actually user didn't ask for task integration but it doesn't hurt.
+    if (taskSection) taskSection.classList.toggle('hidden', !isFocusCategory); // Hidden for Turns too
     if (historyBtn) historyBtn.classList.toggle('hidden', !isFocusCategory);
 
     // Special handling for Multi-Timer persistence
